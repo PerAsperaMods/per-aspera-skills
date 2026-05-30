@@ -31,6 +31,8 @@ gh skill update --all
 | `per-aspera-project-setup` | New mod .csproj, sdkDLL.props, GUID conventions, first build |
 | `per-aspera-sdk-quickref` | SDK access patterns, minimal plugin template, daily lookup |
 | `per-aspera-yaml-modding` | building.yaml, resource.yaml, technology.yaml, index rules |
+| `per-aspera-sdk-core` | LogAspera, ReflectionHelpers, IL2CPP ↔ C# string/collection conversion |
+| `per-aspera-mars-climate-scientist` | Validated Mars physical constants, greenhouse formulas, terraformation thresholds |
 
 ## Requirements
 
