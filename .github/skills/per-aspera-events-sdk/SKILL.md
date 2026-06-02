@@ -11,6 +11,55 @@ license: MIT
 
 # Per Aspera SDK — Events Reference
 
+## ⚡ EnhancedEventBus — Lifecycle Subscriptions (PATTERN PRINCIPAL)
+
+C'est la méthode recommandée pour s'accrocher au cycle de vie du jeu. Choisir le bon event.
+
+```csharp
+using PerAspera.GameAPI.Events.Integration; // EnhancedEventBus
+
+public override void Load()
+{
+    // Choisir UN seul event selon ce dont le mod a besoin :
+    EnhancedEventBus.SubscribeToGameHubReady(OnGameHubReady);        // ← plus tôt (UI, Twitch, logs)
+    EnhancedEventBus.SubscribeToBaseGameDetected(OnBaseGameDetected); // ← BaseGame + Universe dispo
+    EnhancedEventBus.SubscribeToGameFullyLoaded(OnGameFullyLoaded);  // ← BaseGame + Universe + Planet
+    EnhancedEventBus.SubscribeToGameCommandsReady(OnCommandsReady);  // ← OBLIGATOIRE pour Commands.Initialize()
+    EnhancedEventBus.SubscribeToOnLoadFinished(OnLoadFinished);      // ← après BaseGame.OnFinishLoading()
+
+    // Création initiale (premier spawn, pas rechargement)
+    EnhancedEventBus.SubscribeToBaseGameCreated(OnBaseGameCreated);
+    EnhancedEventBus.SubscribeToUniverseCreated(OnUniverseCreated);
+    EnhancedEventBus.SubscribeToPlanetCreated(OnPlanetCreated);
+}
+```
+
+| Event | Quand | Utilisation |
+|-------|-------|-------------|
+| `SubscribeToGameHubReady` | Scene GameHub chargée | Init UI, Twitch, logging |
+| `SubscribeToBaseGameDetected` | BaseGame + Universe dispos | Config early sans Planet |
+| `SubscribeToGameFullyLoaded` | BaseGame + Universe + Planet | Accès complet jeu (**défaut**) |
+| `SubscribeToGameCommandsReady` | Premier BaseGame.Update() tick | `Commands.Initialize(evt)` obligatoire ici |
+| `SubscribeToOnLoadFinished` | Après BaseGame.OnFinishLoading() | Re-init post rechargement |
+
+```csharp
+// Pattern minimal recommandé
+public override void Load()
+{
+    LogAspera.Initialize(Log, "MonMod");
+    EnhancedEventBus.SubscribeToGameFullyLoaded(OnGameFullyLoaded);
+    EnhancedEventBus.SubscribeToGameCommandsReady(evt => Commands.Initialize(evt)); // si tu utilises Commands
+}
+
+private void OnGameFullyLoaded(GameFullyLoadedEvent e)
+{
+    var planet = PlanetWrapper.GetCurrent(); // SDK wrapper (Atmosphere, WaterStock, etc.)
+    LogAspera.Info($"Loaded: {planet?.Name}");
+}
+```
+
+---
+
 ## Required Using Statements (ALWAYS include all)
 
 ```csharp

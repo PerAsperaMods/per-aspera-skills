@@ -33,6 +33,8 @@ gh skill update --all
 | `per-aspera-yaml-modding` | building.yaml, resource.yaml, technology.yaml, index rules |
 | `per-aspera-sdk-core` | LogAspera, ReflectionHelpers, IL2CPP ↔ C# string/collection conversion |
 | `per-aspera-mars-climate-scientist` | Validated Mars physical constants, greenhouse formulas, terraformation thresholds |
+| `per-aspera-database-modding` | ModDatabase SQLite, StoreYAMLData, GetAtmosphericResources, ValidationReport, schema versioning |
+| `per-aspera-harmony-patching` | Prefix/Postfix/Transpiler/Finalizer, special params (__instance/__result), Marshal IL2CPP offsets |
 
 ## Requirements
 

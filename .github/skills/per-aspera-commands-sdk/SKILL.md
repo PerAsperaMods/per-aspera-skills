@@ -11,26 +11,115 @@ license: MIT
 
 # Per Aspera SDK — Commands Reference
 
-## Initialization
+## Initialization (pattern obligatoire)
+
+`Commands.Initialize(evt)` doit être appelé dans `SubscribeToGameCommandsReady` avant toute exécution de commandes natives ou YAML.
 
 ```csharp
 using PerAspera.GameAPI.Commands;
+using PerAspera.GameAPI.Events.Integration;
 
 public override void Load()
 {
-    if (Commands.IsCommandSupported("ImportResource"))
+    // Enregistrer les actions custom et modifiers AVANT le jeu
+    Commands.RegisterAction<MyCustomAction>();
+    Commands.RegisterModifier("drone_hop_capacity", (name, delta) => {
+        RoutingPatch.ExtraHopCapacity += (int)delta;
+    });
+    Commands.RegisterHandler("ActivateSpaceport", (cmd, args) => {
+        Log.LogInfo($"Spaceport activated for {(args.Length > 0 ? args[0] : "player")}!");
+        return true;
+    });
+
+    // Initialize APRÈS que le jeu est prêt (InteractionManager disponible)
+    EnhancedEventBus.SubscribeToGameCommandsReady(evt => {
+        Commands.Initialize(evt);     // ← OBLIGATOIRE avant ExecuteFromYaml/File
+        Commands.OnCommandExecuted(e => LogAspera.Info($"✅ {e.CommandType}"));
+        Commands.OnCommandFailed(e   => LogAspera.Warning($"❌ {e.Error}"));
+
+        // Exécuter des commandes YAML au démarrage
+        string modPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
+        Commands.ExecuteFromYamlFile(Path.Combine(modPath, "startup-actions.yaml"));
+    });
+}
+```
+
+---
+
+## YAML Commands (ExecuteFromYaml / ExecuteFromYamlFile)
+
+```csharp
+// Exécuter un YAML inline (commandes console + SDK natives)
+int count = Commands.ExecuteFromYaml(@"
+actions:
+  - command: FinishConstructions
+    arguments: []
+    daysDelay: 0.0
+    showInFrontend: false
+  - command: SetEngineTimescale
+    arguments: ['2.0']
+    daysDelay: 0.0
+    showInFrontend: false
+");
+
+// Exécuter un fichier YAML
+int count = Commands.ExecuteFromYamlFile(Path.Combine(modPath, "startup-actions.yaml"));
+```
+
+## Custom YAML Handlers
+
+```csharp
+// Enregistrer un handler C# pour une commande YAML custom
+Commands.RegisterHandler("ActivateSpaceport", (cmd, args) =>
+{
+    string faction = args.Length > 0 ? args[0] : "player";
+    Log.LogInfo($"Spaceport activated for {faction}!");
+    return true; // true = succès
+});
+
+// Dans YAML :
+// actions:
+//   - command: ActivateSpaceport
+//     arguments:
+//       - player
+
+bool exists = Commands.IsCommandRegistered("ActivateSpaceport"); // true
+Commands.UnregisterHandler("ActivateSpaceport");
+```
+
+## Custom TextActions (enhancements.yaml)
+
+```csharp
+// Implémentation
+public class GiveWaterAction : IModTextAction
+{
+    public string Name => "GiveWater";
+    public bool Execute(ActionContext ctx)
     {
-        // System ready — set up handlers
-        Commands.OnCommandExecuted(evt =>
-            Log.LogInfo($"✅ {evt.CommandType} in {evt.Duration}ms"));
-        Commands.OnCommandFailed(evt =>
-            Log.LogWarning($"❌ {evt.CommandType}: {evt.Error}"));
-    }
-    else
-    {
-        Log.LogWarning("Commands system not available");
+        Commands.ImportResource(ctx.Faction, GetWaterResource(), 500);
+        return true;
     }
 }
+
+// Enregistrement (avant Initialize)
+Commands.RegisterAction<GiveWaterAction>();
+
+// Dans enhancements.yaml :
+// textActions:
+//   - GiveWater
+```
+
+## Custom Modifiers (enhancements.yaml)
+
+```csharp
+// Handler pour modificateur YAML
+Commands.RegisterModifier("drone_hop_capacity", (name, delta) => {
+    RoutingPatch.ExtraHopCapacity += (int)delta;
+});
+
+// Dans enhancements.yaml :
+// modifiers:
+//   - "drone_hop_capacity: 1"
 ```
 
 ---
@@ -138,14 +227,26 @@ Commands.OnCommandFailed(evt =>
 
 ---
 
-## Available Command Types
+## API de vérification
 
-| CommandType | Parameters | Description |
-|-------------|-----------|-------------|
-| `ImportResource` | `resource`, `quantity` | Add resources to faction |
-| `ConstructBuilding` | `buildingType`, `position` | Place a building |
-| `ResearchTechnology` | `technologyId` | Research a tech instantly |
-| `SetFactionBudget` | `amount` | Override faction budget |
+```csharp
+bool supported = Commands.IsCommandTypeSupported("ImportResource"); // ✅ correct
+string[] types = Commands.GetSupportedCommandTypes();               // liste complète
+```
+
+## Méthodes de convenance statiques
+
+```csharp
+Commands.ImportResource(faction, resource, quantity)     // → CommandResult
+Commands.UnlockBuilding(faction, building)               // → CommandResult
+Commands.ResearchTechnology(faction, technology)         // → CommandResult
+Commands.UnlockKnowledge(faction, knowledge)             // → CommandResult
+Commands.StartDialogue(faction, person, dialogue)        // → CommandResult
+Commands.SetOverride(key, value)                         // → CommandResult
+Commands.Sabotage(targetFaction)                         // → CommandResult
+Commands.SpawnResourceVein(faction, resource, x, y, z)  // → CommandResult
+Commands.GameOver()                                      // → CommandResult
+```
 
 ---
 
