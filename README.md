@@ -1,46 +1,39 @@
-# Per Aspera Modding Skills
+# Per Aspera — Claude Code skills & agents
 
-GitHub Copilot knowledge skills for [Per Aspera](https://store.steampowered.com/app/1072880/Per_Aspera/) modding with BepInEx 6 IL2CPP.
+Marketplace de plugin [Claude Code](https://code.claude.com/docs) pour le **modding de [Per Aspera](https://store.steampowered.com/app/803050/Per_Aspera/)** (Unity IL2CPP, BepInEx 6, SDK maison + datamodel YAML).
 
-## Install
+Le plugin **`per-aspera-modding`** apporte à Claude :
 
-```bash
-# Install a specific skill
-gh skill install PerAsperaMods/per-aspera-skills per-aspera-game-structure
+- **23 skills** : SDK (events, commands, wrappers, climate, overrides…), IL2CPP gotchas & property access, HarmonyX patching, YAML modding, UI uGUI toolkit, drone routing, lens system, game structure, etc.
+- **9 agents spécialisés** : onboarding, bepinex, sdk-coordinator, sdk-ui, yaml, debugging, architecture…
 
-# Install all skills
-gh skill install PerAsperaMods/per-aspera-skills --all
+## Installation
 
-# Update installed skills
-gh skill update --all
+Dans Claude Code, sur ton dossier de modding :
+
+```
+/plugin marketplace add PerAsperaMods/per-aspera-skills
+/plugin install per-aspera-modding@per-aspera
 ```
 
-## Available Skills
+> 💡 Le **Per Aspera Mod Launcher** peut configurer tout ça automatiquement (il écrit le `.claude/settings.json` qui enregistre ce marketplace).
 
-| Skill | Description |
-|-------|-------------|
-| `per-aspera-game-structure` | BaseGame/Universe/Planet hierarchy, Handle/Keeper system, anti-hallucination reference |
-| `per-aspera-events-sdk` | ModEventBus, EnhancedEventBus, NativeEventPatcher, CS0029/CS0019 fixes |
-| `per-aspera-wrappers-sdk` | Safe wrapper classes, WrapperFactory, IL2CPP extension methods |
-| `per-aspera-climate-sdk` | AtmosphereSimulator, TemperatureCalculator, WaterCycleSimulator |
-| `per-aspera-gameapi-overrides` | GetterOverride, MirrorBaseGame/Universe/Planet, OverridePatchSystem |
-| `per-aspera-commands-sdk` | CommandExecutor, IGameCommand, builder pattern, async execution |
-| `per-aspera-code-patterns` | Validated IL2CPP patterns, MonoBehaviour, Mirror, LLM hallucination checks |
-| `per-aspera-il2cpp-gotchas` | 10 common IL2CPP pitfalls with exact fixes |
-| `per-aspera-debug-workflow` | BepInEx log analysis, crash diagnosis, debug loop |
-| `per-aspera-project-setup` | New mod .csproj, sdkDLL.props, GUID conventions, first build |
-| `per-aspera-sdk-quickref` | SDK access patterns, minimal plugin template, daily lookup |
-| `per-aspera-yaml-modding` | building.yaml, resource.yaml, technology.yaml, index rules |
-| `per-aspera-sdk-core` | LogAspera, ReflectionHelpers, IL2CPP ↔ C# string/collection conversion |
-| `per-aspera-mars-climate-scientist` | Validated Mars physical constants, greenhouse formulas, terraformation thresholds |
-| `per-aspera-database-modding` | ModDatabase SQLite, StoreYAMLData, GetAtmosphericResources, ValidationReport, schema versioning |
-| `per-aspera-harmony-patching` | Prefix/Postfix/Transpiler/Finalizer, special params (__instance/__result), Marshal IL2CPP offsets |
+## Mise à jour
 
-## Requirements
+```
+/plugin marketplace update per-aspera
+```
 
-- [GitHub CLI](https://cli.github.com/) with Copilot extension
-- VS Code with GitHub Copilot
+Chaque nouveau commit poussé ici est traité comme une nouvelle version (versionnage par commit SHA).
 
-## License
+## ⚠️ Contenu généré — ne pas éditer à la main
+
+`plugins/per-aspera-modding/skills/` et `agents/` sont **générés** depuis le repo de développement
+(`ModPeraspera/.claude/`) par le script `scripts/sync-skills.ps1`, qui sélectionne le sous-ensemble
+portable et générise les chemins machine. Toute édition directe ici sera écrasée au prochain sync.
+
+Pour modifier une skill : l'éditer dans le repo source, relancer `sync-skills.ps1`, puis `git push`.
+
+## Licence
 
 MIT

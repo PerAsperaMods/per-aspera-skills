@@ -1,0 +1,12 @@
+{
+  "name": "per-aspera-modding",
+  "description": "Boîte à outils Claude pour modder Per Aspera : skills (SDK BepInEx IL2CPP, HarmonyX, YAML, UI uGUI, routing, climat…) + agents spécialisés. Use when developing mods for the game Per Aspera.",
+  "author": {
+    "name": "PerAsperaMods",
+    "email": "wafhien@gmail.com"
+  },
+  "homepage": "https://github.com/PerAsperaMods/per-aspera-skills",
+  "repository": "https://github.com/PerAsperaMods/per-aspera-skills",
+  "license": "MIT",
+  "keywords": ["per-aspera", "modding", "bepinex", "il2cpp", "unity", "yaml", "harmonyx"]
+}

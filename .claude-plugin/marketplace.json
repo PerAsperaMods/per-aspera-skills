@@ -1,0 +1,17 @@
+{
+  "name": "per-aspera",
+  "owner": {
+    "name": "PerAsperaMods",
+    "email": "wafhien@gmail.com"
+  },
+  "description": "Skills et agents Claude Code pour le modding de Per Aspera (SDK BepInEx IL2CPP + YAML).",
+  "plugins": [
+    {
+      "name": "per-aspera-modding",
+      "source": "./plugins/per-aspera-modding",
+      "description": "Boîte à outils Claude pour modder Per Aspera : 23 skills (SDK, IL2CPP, HarmonyX, YAML, UI uGUI, routing, climat…) + 9 agents spécialisés.",
+      "category": "development",
+      "keywords": ["per-aspera", "modding", "bepinex", "il2cpp", "unity", "yaml", "harmonyx"]
+    }
+  ]
+}
