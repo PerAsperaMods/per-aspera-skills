@@ -9,23 +9,23 @@ license: MIT
 ---
 
 
-# Per Aspera SDK â€” Database Reference (ModDatabase)
+# Per Aspera SDK — Database Reference (ModDatabase)
 
 ## Architecture
 
-`ModDatabase` est un singleton SQLite qui stocke les donnÃ©es YAML de tous les mods au runtime.
-Il indexe les propriÃ©tÃ©s clÃ©s pour des requÃªtes rapides sans dÃ©sÃ©rialiser tout le YAML.
+`ModDatabase` est un singleton SQLite qui stocke les données YAML de tous les mods au runtime.
+Il indexe les propriétés clés pour des requêtes rapides sans désérialiser tout le YAML.
 
 ```
 ModDatabase.Instance (singleton SQLite)
-â”œâ”€â”€ 4 tables : resources, buildings, technologies, knowledge
-â”œâ”€â”€ mod_metadata : version, checksum, dataType par mod
-â””â”€â”€ schema_versions : migrations de schÃ©ma
+├── 4 tables : resources, buildings, technologies, knowledge
+├── mod_metadata : version, checksum, dataType par mod
+└── schema_versions : migrations de schéma
 ```
 
 ---
 
-## Setup â€” initialisation depuis un mod
+## Setup — initialisation depuis un mod
 
 ```csharp
 using PerAspera.GameAPI.Database;
@@ -34,7 +34,7 @@ using PerAspera.GameAPI.Events.Integration;
 [BepInPlugin("com.mymod.withdb", "My DB Mod", "1.0.0")]
 public class MyPlugin : BasePlugin
 {
-    private ModDatabase _db = ModDatabase.Instance; // accÃ¨s direct, pas besoin d'init
+    private ModDatabase _db = ModDatabase.Instance; // accès direct, pas besoin d'init
 
     public override void Load()
     {
@@ -44,7 +44,7 @@ public class MyPlugin : BasePlugin
 
     private void OnGameFullyLoaded(GameFullyLoadedEvent e)
     {
-        // Stocker les donnÃ©es YAML du mod dans la DB
+        // Stocker les données YAML du mod dans la DB
         string checksum = "v1.2.3"; // utiliser un hash ou version
 
         if (_db.NeedsUpdate("com.mymod.withdb", checksum))
@@ -65,7 +65,7 @@ public class MyPlugin : BasePlugin
 
 ---
 
-## StoreYAMLData â€” stocker les donnÃ©es
+## StoreYAMLData — stocker les données
 
 ```csharp
 // Stocker une ressource custom
@@ -81,21 +81,21 @@ _db.StoreYAMLData(
     modId:    "com.mymod.withdb",
     yamlData: resourceData,
     checksum: "abc123",              // hash du fichier YAML source
-    isNative: false                  // true = donnÃ©es vanilla du jeu
+    isNative: false                  // true = données vanilla du jeu
 );
 
-// VÃ©rifier si une mise Ã  jour est nÃ©cessaire (checksum changed)
+// Vérifier si une mise à jour est nécessaire (checksum changed)
 if (_db.NeedsUpdate("com.mymod.withdb", "abc123"))
 {
-    // donnÃ©es changÃ©es, re-stocker
+    // données changées, re-stocker
 }
 ```
 
 ---
 
-## Lecture et requÃªtes
+## Lecture et requêtes
 
-### GetEntry â€” une entrÃ©e par nom
+### GetEntry — une entrée par nom
 
 ```csharp
 var water = _db.GetEntry("resources", "resource_water"); // returns object (Dictionary)
@@ -105,7 +105,7 @@ if (water is Dictionary<string, object> dict)
 }
 ```
 
-### RetrieveYAMLData â€” toutes les entrÃ©es, avec filtres optionnels
+### RetrieveYAMLData — toutes les entrées, avec filtres optionnels
 
 ```csharp
 // Toutes les ressources d'un mod
@@ -120,7 +120,7 @@ var filters = new Dictionary<string, object>
 var nativeAtmospheric = _db.RetrieveYAMLData("resources", null, filters);
 ```
 
-### GetEntriesByCategory â€” filtrer par catÃ©gorie (index fast)
+### GetEntriesByCategory — filtrer par catégorie (index fast)
 
 ```csharp
 var atmospheric = _db.GetEntriesByCategory("resources", "atmospheric");
@@ -128,7 +128,7 @@ var power       = _db.GetEntriesByCategory("buildings", "power");
 // Retourne List<Dictionary<string, object>>
 ```
 
-### GetBuildingsByEnergyRange â€” requÃªte par plage d'Ã©nergie
+### GetBuildingsByEnergyRange — requête par plage d'énergie
 
 ```csharp
 var highEnergy = _db.GetBuildingsByEnergyRange(minEnergy: 50.0, maxEnergy: 200.0);
@@ -136,14 +136,14 @@ var highEnergy = _db.GetBuildingsByEnergyRange(minEnergy: 50.0, maxEnergy: 200.0
 
 ---
 
-## Ressources atmosphÃ©riques (pour mods type MoreResources)
+## Ressources atmosphériques (pour mods type MoreResources)
 
 ```csharp
-// Obtenir toutes les ressources atmosphÃ©riques (natives + mods)
+// Obtenir toutes les ressources atmosphériques (natives + mods)
 var atmos       = _db.GetAtmosphericResources();         // List<string>
-var atmosOrdered = _db.GetAtmosphericResourcesOrdered(); // List<string>, triÃ©es par priority
+var atmosOrdered = _db.GetAtmosphericResourcesOrdered(); // List<string>, triées par priority
 
-// Composition complÃ¨te avec mÃ©tadonnÃ©es
+// Composition complète avec métadonnées
 Dictionary<string, AtmosphericResourceInfo> composition = _db.GetAtmosphereComposition();
 foreach (var kvp in composition)
 {
@@ -151,52 +151,52 @@ foreach (var kvp in composition)
     LogAspera.Info($"{info.DisplayName} | native={info.IsNative} | priority={info.Priority}");
 }
 
-// Marquer une ressource mod comme atmosphÃ©rique (pour apparaÃ®tre dans les graphiques)
+// Marquer une ressource mod comme atmosphérique (pour apparaître dans les graphiques)
 _db.MarkResourceAsAtmospheric("resource_xenon", priority: 25);
 
-// Toutes les ressources non-atmosphÃ©riques (fabriquÃ©es, minÃ©esâ€¦)
+// Toutes les ressources non-atmosphériques (fabriquées, minées…)
 var derived = _db.GetDerivedResources();
 ```
 
 ---
 
-## Validation et intÃ©gritÃ©
+## Validation et intégrité
 
 ```csharp
-// Rapport de validation pour un type de donnÃ©es
+// Rapport de validation pour un type de données
 ValidationReport report = _db.ValidateDataType("resources");
 LogAspera.Info($"Resources: {report.ValidEntries}/{report.TotalEntries} valides");
 if (report.Errors.Any())
     foreach (var err in report.Errors.Take(5))
         LogAspera.Warning(err);
 
-// Stats globales (santÃ© de toute la DB)
+// Stats globales (santé de toute la DB)
 EnhancedStats stats = _db.GetEnhancedStats();
-LogAspera.Info($"Mods: {stats.TotalMods} | IntÃ©gritÃ© resources: {stats.GetValidationRate("resources"):F1}%");
+LogAspera.Info($"Mods: {stats.TotalMods} | Intégrité resources: {stats.GetValidationRate("resources"):F1}%");
 ```
 
 ---
 
-## SchÃ©ma et versioning
+## Schéma et versioning
 
 ```csharp
-int version = _db.GetSchemaVersion("resources"); // version actuelle du schÃ©ma
+int version = _db.GetSchemaVersion("resources"); // version actuelle du schéma
 
 // Appliquer une migration (quand le format YAML du mod change)
 _db.ApplySchemaMigration("resources", newVersion: 2, description: "Added atmospheric gas priority");
 
-// Nettoyer les donnÃ©es d'un mod (ex: lors d'une dÃ©sinstallation)
+// Nettoyer les données d'un mod (ex: lors d'une désinstallation)
 _db.CleanupModData("com.mymod.withdb");
 ```
 
 ---
 
-## Types de donnÃ©es supportÃ©s
+## Types de données supportés
 
 | dataType | Table | Description |
 |----------|-------|-------------|
 | `"resources"` ou `"resourcetype"` | resources | Ressources du jeu |
-| `"buildings"` ou `"buildingtype"` | buildings | BÃ¢timents |
+| `"buildings"` ou `"buildingtype"` | buildings | Bâtiments |
 | `"technologies"` ou `"technology"` | technologies | Technologies |
 | `"knowledge"` | knowledge | Connaissances/lore |
 
@@ -239,8 +239,8 @@ public class EnhancedStats
 
 ---
 
-## RÃ©fÃ©rence source
+## Référence source
 
-- `SDK\PerAspera.GameAPI.Database\ModDatabase.cs` â€” implÃ©mentation complÃ¨te
-- `SDK\PerAspera.GameAPI.Database\EnhancedDatabaseExamples.cs` â€” 7 exemples
-- `SDK\PerAspera.GameAPI.Database\EnhancedDatabase-README.md` â€” architecture SQLite
+- `SDK\PerAspera.GameAPI.Database\ModDatabase.cs` — implémentation complète
+- `SDK\PerAspera.GameAPI.Database\EnhancedDatabaseExamples.cs` — 7 exemples
+- `SDK\PerAspera.GameAPI.Database\EnhancedDatabase-README.md` — architecture SQLite

@@ -2,16 +2,16 @@
 name: per-aspera-events-sdk
 description: >
   Per Aspera SDK Events system. Use when subscribing to game events (building constructed,
-  temperature changed, resource produced, game tickâ€¦), using EnhancedEventBus, NativeEventHub,
+  temperature changed, resource produced, game tick…), using EnhancedEventBus, NativeEventHub,
   NativeEventExtensions, writing event handlers, fixing CS0029/CS0019 errors, or understanding
   the new lifecycle events (GameSessionStarted, GameUIReady).
 license: MIT
 ---
 
 
-# Per Aspera SDK â€” Events Reference
+# Per Aspera SDK — Events Reference
 
-## âš¡ EnhancedEventBus â€” Lifecycle Subscriptions (PATTERN PRINCIPAL)
+## ⚡ EnhancedEventBus — Lifecycle Subscriptions (PATTERN PRINCIPAL)
 
 ```csharp
 using PerAspera.GameAPI.Events.Integration; // EnhancedEventBus
@@ -19,31 +19,31 @@ using PerAspera.GameAPI.Events.Integration; // EnhancedEventBus
 public override void Load()
 {
     // Choisir UN seul event selon ce dont le mod a besoin :
-    EnhancedEventBus.SubscribeToGameSessionStarted(OnSessionStarted);  // â† nouvelle session (new/load)
-    EnhancedEventBus.SubscribeToGameCommandsReady(OnCommandsReady);   // â† OBLIGATOIRE pour Commands.Initialize()
-    EnhancedEventBus.SubscribeToGameUIReady(OnUIReady);               // â† canvasRefs.notificationPresenter prÃªt
-    EnhancedEventBus.SubscribeToGameFullyLoaded(OnGameFullyLoaded);   // â† legacy (Planet disponible)
-    EnhancedEventBus.SubscribeToOnLoadFinished(OnLoadFinished);       // â† aprÃ¨s BaseGame.OnFinishLoading()
+    EnhancedEventBus.SubscribeToGameSessionStarted(OnSessionStarted);  // ← nouvelle session (new/load)
+    EnhancedEventBus.SubscribeToGameCommandsReady(OnCommandsReady);   // ← OBLIGATOIRE pour Commands.Initialize()
+    EnhancedEventBus.SubscribeToGameUIReady(OnUIReady);               // ← canvasRefs.notificationPresenter prêt
+    EnhancedEventBus.SubscribeToGameFullyLoaded(OnGameFullyLoaded);   // ← legacy (Planet disponible)
+    EnhancedEventBus.SubscribeToOnLoadFinished(OnLoadFinished);       // ← après BaseGame.OnFinishLoading()
 }
 ```
 
 | Event | Quand | Utilisation |
 |-------|-------|-------------|
-| `SubscribeToGameSessionStarted` | `GevUniverseNewGameStarted` / `ContinueEndedGame` | RÃ©initialisation session, reset flags |
-| `SubscribeToGameCommandsReady` | Premier Update() oÃ¹ `playerFaction.interactionManager != null` | âœ… **AccÃ¨s complet, natifs directs** |
+| `SubscribeToGameSessionStarted` | `GevUniverseNewGameStarted` / `ContinueEndedGame` | Réinitialisation session, reset flags |
+| `SubscribeToGameCommandsReady` | Premier Update() où `playerFaction.interactionManager != null` | ✅ **Accès complet, natifs directs** |
 | `SubscribeToGameUIReady` | `canvasRefs.notificationPresenter != null` | Notifications UI, panneau HUD |
-| `SubscribeToGameFullyLoaded` | BaseGame + Universe + Planet dispos | AccÃ¨s Planet â€” voir avertissement âš ï¸ ci-dessous |
-| `SubscribeToOnLoadFinished` | AprÃ¨s `BaseGame.OnFinishLoading()` | Re-init post rechargement |
+| `SubscribeToGameFullyLoaded` | BaseGame + Universe + Planet dispos | Accès Planet — voir avertissement ⚠️ ci-dessous |
+| `SubscribeToOnLoadFinished` | Après `BaseGame.OnFinishLoading()` | Re-init post rechargement |
 
-### âš ï¸ PiÃ¨ge critique : GameFullyLoadedEvent
+### ⚠️ Piège critique : GameFullyLoadedEvent
 
 `GameFullyLoadedEvent` fire **avant** que l'InstanceManager enregistre Universe et Planet.  
-â†’ `PlanetWrapper.GetCurrent()` et `BaseGameWrapper.GetCurrent()` peuvent **lever une MissingMethodException** Ã  l'intÃ©rieur.
+→ `PlanetWrapper.GetCurrent()` et `BaseGameWrapper.GetCurrent()` peuvent **lever une MissingMethodException** à l'intérieur.
 
-**RÃ¨gle : utiliser `GameCommandsReadyEvent` dÃ¨s qu'on a besoin de Planet ou des wrappers SDK.**
+**Règle : utiliser `GameCommandsReadyEvent` dès qu'on a besoin de Planet ou des wrappers SDK.**
 
 ```csharp
-// âœ… Pattern recommandÃ© â€” GameCommandsReadyEvent
+// ✅ Pattern recommandé — GameCommandsReadyEvent
 public override void Load()
 {
     LogAspera.Initialize(Log, "MonMod");
@@ -57,24 +57,24 @@ private void OnGameCommandsReady(GameCommandsReadyEvent evt)
     var baseGame = new BaseGameWrapper(evt.NativeBaseGame);
     var universe = evt.NativeUniverse;
     var faction  = evt.NativePlayerFaction;
-    // â†’ utiliser planet.WaterStock, baseGame.keeper, universe.keeper, etc.
+    // → utiliser planet.WaterStock, baseGame.keeper, universe.keeper, etc.
 }
 ```
 
-### GameSessionStartedEvent â€” Reset multi-session
+### GameSessionStartedEvent — Reset multi-session
 
 ```csharp
 EnhancedEventBus.SubscribeToGameSessionStarted(evt => {
     bool isNew = evt.IsNewGame;
     var baseGame = evt.NativeBaseGame;   // BaseGame natif
-    var universe = evt.NativeUniverse;   // Universe natif (peut Ãªtre null trÃ¨s tÃ´t)
+    var universe = evt.NativeUniverse;   // Universe natif (peut être null très tôt)
     ResetMyModState();
 });
 ```
 
 ---
 
-## ðŸŽ¯ NativeEventHub â€” Events Natifs du Jeu (121 events)
+## 🎯 NativeEventHub — Events Natifs du Jeu (121 events)
 
 `NativeEventHub` intercepte **tous** les events natifs via un seul Postfix sur `GameEventBus.DispatchInternal`.
 
@@ -84,13 +84,13 @@ EnhancedEventBus.SubscribeToGameSessionStarted(evt => {
 public override void Load()
 {
     var harmony = new Harmony("com.mymod.id");
-    NativeEventHub.Apply(harmony); // idempotent â€” safe Ã  appeler plusieurs fois
+    NativeEventHub.Apply(harmony); // idempotent — safe à appeler plusieurs fois
     // ...
 }
 ```
 
-> âš ï¸ Si ton plugin dÃ©pend de `PerAspera.GameAPI.Events` (`[BepInDependency]`), `NativeEventHub.Apply`
-> est dÃ©jÃ  appelÃ© par ce plugin â€” pas besoin de le rappeler.
+> ⚠️ Si ton plugin dépend de `PerAspera.GameAPI.Events` (`[BepInDependency]`), `NativeEventHub.Apply`
+> est déjà appelé par ce plugin — pas besoin de le rappeler.
 
 ### Subscribe / Unsubscribe
 
@@ -108,26 +108,26 @@ bool ok = NativeEventHub.Subscribe(NativeGameEvent.BuildingBuilt, args => {
 NativeEventHub.Unsubscribe(NativeGameEvent.BuildingBuilt, myHandler);
 ```
 
-### NativeGameEvent â€” Enum des events clÃ©s
+### NativeGameEvent — Enum des events clés
 
-| NativeGameEvent | DÃ©clenchÃ© quand |
+| NativeGameEvent | Déclenché quand |
 |-----------------|-----------------|
-| `BuildingBuilt` | Construction terminÃ©e |
-| `BuildingInternalAdd` | Building ajoutÃ© au monde |
-| `BuildingInternalRemove` | Building retirÃ© du monde |
-| `FactionShipArrived` | Cargo arrivÃ© Ã  l'orbitale |
-| `UniverseDayPassed` | Sol martien passÃ© |
-| `UniverseNewGameStarted` | Nouvelle partie dÃ©marrÃ©e |
-| `UniverseContinueEndedGame` | Sauvegarde chargÃ©e |
-| `FactionBuildingTypeUnlocked` | Tech dÃ©bloquÃ©e |
-| `FactionQuestUnlocked` | QuÃªte dÃ©bloquÃ©e |
+| `BuildingBuilt` | Construction terminée |
+| `BuildingInternalAdd` | Building ajouté au monde |
+| `BuildingInternalRemove` | Building retiré du monde |
+| `FactionShipArrived` | Cargo arrivé à l'orbitale |
+| `UniverseDayPassed` | Sol martien passé |
+| `UniverseNewGameStarted` | Nouvelle partie démarrée |
+| `UniverseContinueEndedGame` | Sauvegarde chargée |
+| `FactionBuildingTypeUnlocked` | Tech débloquée |
+| `FactionQuestUnlocked` | Quête débloquée |
 
 ---
 
-## ðŸ” NativeEventExtensions â€” RÃ©solution Handle â†’ Objet
+## 🔍 NativeEventExtensions — Résolution Handle → Objet
 
-Les events natifs identifient les entitÃ©s via des `Handle` structs (index + version).
-`NativeEventExtensions` les rÃ©sout en objets typÃ©s.
+Les events natifs identifient les entités via des `Handle` structs (index + version).
+`NativeEventExtensions` les résout en objets typés.
 
 ```csharp
 using PerAspera.GameAPI.Events.Native;
@@ -136,37 +136,37 @@ NativeEventHub.Subscribe(NativeGameEvent.BuildingBuilt, args => {
     var keeper  = universe.keeper;           // ou baseGame.keeper
     var faction = universe.playerFaction;
 
-    // âœ… Building via Keeper._HandleToBuildingSafe
-    var building = args.ResolveBuilding(keeper);        // sender handle â†’ Building
-    var target   = args.ResolveBuildingTarget(keeper);  // target handle â†’ Building
+    // ✅ Building via Keeper._HandleToBuildingSafe
+    var building = args.ResolveBuilding(keeper);        // sender handle → Building
+    var target   = args.ResolveBuildingTarget(keeper);  // target handle → Building
 
-    // âœ… Faction via itÃ©ration universe.factions
-    var f = args.ResolveFaction(universe);              // O(n), n = 2â€“4 factions
+    // ✅ Faction via itération universe.factions
+    var f = args.ResolveFaction(universe);              // O(n), n = 2–4 factions
 
-    // âœ… Drone / Way via itÃ©ration faction.drones / faction.ways
+    // ✅ Drone / Way via itération faction.drones / faction.ways
     var drone = args.ResolveDroneFromFaction(faction);
     var way   = args.ResolveWayFromFaction(faction);
 
-    // âœ… Handle brut (accÃ¨s direct sans rÃ©solution)
+    // ✅ Handle brut (accès direct sans résolution)
     var senderHandle = args.SenderHandle;
     var targetHandle = args.TargetHandle;
-    var payload      = args.Payload;  // GameEventPayload union (donnÃ©es event-spÃ©cifiques)
+    var payload      = args.Payload;  // GameEventPayload union (données event-spécifiques)
 });
 ```
 
-**SÃ©mantique sender/target par famille d'events :**
+**Sémantique sender/target par famille d'events :**
 
-| Famille | Sender estâ€¦ | Target estâ€¦ |
+| Famille | Sender est… | Target est… |
 |---------|-------------|-------------|
-| `Building*` | Le building concernÃ© | Contexte secondaire (ex : nouveau type) |
-| `Faction*` | La faction impliquÃ©e | â€” |
-| `Drone*` | Le drone | â€” |
-| `Way*` | Le Way | â€” |
-| `Universe*` / `Planet*` | Universe / Planet | â€” |
+| `Building*` | Le building concerné | Contexte secondaire (ex : nouveau type) |
+| `Faction*` | La faction impliquée | — |
+| `Drone*` | Le drone | — |
+| `Way*` | Le Way | — |
+| `Universe*` / `Planet*` | Universe / Planet | — |
 
 ---
 
-## ðŸ“‹ SDKEventConstants â€” Constantes rÃ©elles
+## 📋 SDKEventConstants — Constantes réelles
 
 ```csharp
 using PerAspera.GameAPI.Events.Constants;
@@ -194,28 +194,28 @@ using PerAspera.Core;                       // LogAspera
 
 ---
 
-## âŒ Anti-Patterns
+## ❌ Anti-Patterns
 
 ```csharp
-// âŒ ModEventBus â€” N'EXISTE PAS dans le SDK
+// ❌ ModEventBus — N'EXISTE PAS dans le SDK
 ModEventBus.Subscribe<ClimateEventData>(...);
 
-// âŒ GameEvents.OnBuildingConstructed â€” N'EXISTE PAS (constantes fictives)
-EnhancedEvents.Subscribe("Native:BuildingSpawned", ...);  // personne ne publie plus Ã§a
+// ❌ GameEvents.OnBuildingConstructed — N'EXISTE PAS (constantes fictives)
+EnhancedEvents.Subscribe("Native:BuildingSpawned", ...);  // personne ne publie plus ça
 
-// âŒ BuildingSpawnedNativeEvent â€” classe supprimÃ©e (2026-06), remplacÃ©e par NativeEventHub
+// ❌ BuildingSpawnedNativeEvent — classe supprimée (2026-06), remplacée par NativeEventHub
 new BuildingSpawnedNativeEvent { BuildingTypeKey = "..." };
 
-// âŒ Reflection dans les handlers d'events
-var field = payload.GetType().GetField("buildingType"); // â†’ SafeInvoke si vraiment nÃ©cessaire
+// ❌ Reflection dans les handlers d'events
+var field = payload.GetType().GetField("buildingType"); // → SafeInvoke si vraiment nécessaire
 
-// âŒ WrapperFactory â€” N'EXISTE PAS
+// ❌ WrapperFactory — N'EXISTE PAS
 WrapperFactory.ConvertToWrapper<Building>(native);
 ```
 
 ---
 
-## Exemple complet â€” Mod rÃ©agissant aux buildings
+## Exemple complet — Mod réagissant aux buildings
 
 ```csharp
 using BepInEx;

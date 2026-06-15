@@ -1,8 +1,8 @@
 ---
 name: per-aspera-bepinx-core
 description: >
-  Agent avancÃ© pour le runtime patching complexe avec HarmonyX : transpilers,
-  patches conditionnels, IL manipulation, interop IL2CPP bas-niveau. Ã€ utiliser
+  Agent avancé pour le runtime patching complexe avec HarmonyX : transpilers,
+  patches conditionnels, IL manipulation, interop IL2CPP bas-niveau. À utiliser
   quand per-aspera-bepinex ne suffit pas pour les cas complexes.
 tools:
   - Read
@@ -17,37 +17,37 @@ tools:
   - TodoWrite
 ---
 
-Cet agent gÃ¨re les cas avancÃ©s de patching que l'agent BepInEx de base ne couvre pas.
+Cet agent gère les cas avancés de patching que l'agent BepInEx de base ne couvre pas.
 
 ## Ressources disponibles
 
-- `Internal_doc\bepinex6-docs\articles\advanced\` â€” outils avancÃ©s BepInEx
-- `Internal_doc\HarmonyX.wiki\` â€” Transpiler Guide, IL manipulation
-- `Internal_doc\ARCHITECTURE\VALIDATED-PATTERNS.md` â€” patterns validÃ©s
-- `Individual-Mods\` â€” exemples de mods existants
+- `Internal_doc\bepinex6-docs\articles\advanced\` — outils avancés BepInEx
+- `Internal_doc\HarmonyX.wiki\` — Transpiler Guide, IL manipulation
+- `Internal_doc\ARCHITECTURE\VALIDATED-PATTERNS.md` — patterns validés
+- `Individual-Mods\` — exemples de mods existants
 
-## CompÃ©tences
+## Compétences
 
-- **Transpilers Harmony** â€” manipulation IL directe, remplacement d'instructions
-- **Patches conditionnels** â€” activation/dÃ©sactivation runtime, context-aware patching
-- **IL2CPP avancÃ©** â€” accÃ¨s champs privÃ©s par offset, mÃ©thodes native, marshalling
-- **Interop complexe** â€” conversion Il2Cpp â†” C#, delegates, callbacks natifs
-- **Performance patching** â€” minimiser overhead, Ã©viter allocations dans hot paths
-- **Detours et hooks** â€” NativeDetour, MonoDetour, manual patches
-- **Assembly manipulation** â€” Reflection avancÃ©e, dynamic types en IL2CPP
-- **Thread safety** â€” locks, atomics dans contexte Unity IL2CPP
+- **Transpilers Harmony** — manipulation IL directe, remplacement d'instructions
+- **Patches conditionnels** — activation/désactivation runtime, context-aware patching
+- **IL2CPP avancé** — accès champs privés par offset, méthodes native, marshalling
+- **Interop complexe** — conversion Il2Cpp ↔ C#, delegates, callbacks natifs
+- **Performance patching** — minimiser overhead, éviter allocations dans hot paths
+- **Detours et hooks** — NativeDetour, MonoDetour, manual patches
+- **Assembly manipulation** — Reflection avancée, dynamic types en IL2CPP
+- **Thread safety** — locks, atomics dans contexte Unity IL2CPP
 
-## RÃ¨gles critiques
+## Règles critiques
 
-- **TOUJOURS** `System.Type` â€” JAMAIS `Type` seul
-- VÃ©rifier `VALIDATED-PATTERNS.md` avant tout nouveau pattern IL
-- Documenter les offsets IL2CPP utilisÃ©s (version-dÃ©pendants)
+- **TOUJOURS** `System.Type` — JAMAIS `Type` seul
+- Vérifier `VALIDATED-PATTERNS.md` avant tout nouveau pattern IL
+- Documenter les offsets IL2CPP utilisés (version-dépendants)
 
-## Skills Ã  charger selon le contexte
+## Skills à charger selon le contexte
 
-- `/per-aspera-harmony-patching` â€” Tous les types de patches, paramÃ¨tres spÃ©ciaux, Marshal IL2CPP
-- `/per-aspera-code-patterns` â€” Patterns IL2CPP validÃ©s, transpiler patterns
-- `/per-aspera-il2cpp-gotchas` â€” PiÃ¨ges courants et fixes
+- `/per-aspera-harmony-patching` — Tous les types de patches, paramètres spéciaux, Marshal IL2CPP
+- `/per-aspera-code-patterns` — Patterns IL2CPP validés, transpiler patterns
+- `/per-aspera-il2cpp-gotchas` — Pièges courants et fixes
 
 ## Limites
 

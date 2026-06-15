@@ -9,24 +9,24 @@ license: MIT
 ---
 
 
-# Per Aspera SDK â€” Climate Reference
+# Per Aspera SDK — Climate Reference
 
-## Architecture rÃ©elle (cellular grid)
+## Architecture réelle (cellular grid)
 
 ```
 PerAspera.GameAPI.Climate
-â”œâ”€â”€ ClimateController          â€” ContrÃ´leur principal (instancier, pas statique)
-â”‚   â”œâ”€â”€ ClimateSimulator       â€” Simulation sous-jacente
-â”‚   â”œâ”€â”€ AtmosphereGrid         â€” Grille atmosphÃ©rique cellulaire
-â”‚   â”œâ”€â”€ TerraformingEffectsController â€” Effets dynamiques (heatwaves, boosts)
-â”‚   â””â”€â”€ ResourceBasedClimate   â€” Mode basÃ© sur les ressources du jeu
-â”œâ”€â”€ Domain/Cell/AtmosphereCell â€” Cellule atmosphÃ©rique individuelle
-â”œâ”€â”€ Domain/Gas/AtmosphericGas  â€” DÃ©finition de gaz
-â””â”€â”€ Configuration/ClimateConfig â€” ParamÃ¨tres de simulation
+├── ClimateController          — Contrôleur principal (instancier, pas statique)
+│   ├── ClimateSimulator       — Simulation sous-jacente
+│   ├── AtmosphereGrid         — Grille atmosphérique cellulaire
+│   ├── TerraformingEffectsController — Effets dynamiques (heatwaves, boosts)
+│   └── ResourceBasedClimate   — Mode basé sur les ressources du jeu
+├── Domain/Cell/AtmosphereCell — Cellule atmosphérique individuelle
+├── Domain/Gas/AtmosphericGas  — Définition de gaz
+└── Configuration/ClimateConfig — Paramètres de simulation
 ```
 
-> **Note** : L'API climate est basÃ©e sur instances (`ClimateController`), PAS des classes statiques.
-> Les `AtmosphereSimulator`, `TemperatureCalculator` etc. sont des dÃ©tails internes.
+> **Note** : L'API climate est basée sur instances (`ClimateController`), PAS des classes statiques.
+> Les `AtmosphereSimulator`, `TemperatureCalculator` etc. sont des détails internes.
 
 ---
 
@@ -53,22 +53,22 @@ public class ClimateModPlugin : BasePlugin
         var planet = PlanetWrapper.GetCurrent();
         if (planet == null) return;
 
-        _climate = new ClimateController();          // config par dÃ©faut
+        _climate = new ClimateController();          // config par défaut
         _climate.EnableClimateControl(planet);       // active les patches Harmony
-        LogAspera.Info($"Climate active â€” cells: {_climate.GetActiveCellsCount()}");
+        LogAspera.Info($"Climate active — cells: {_climate.GetActiveCellsCount()}");
     }
 }
 ```
 
 ---
 
-## ClimateController â€” API publique
+## ClimateController — API publique
 
-### ContrÃ´le bidirectionnel (Harmony patches)
+### Contrôle bidirectionnel (Harmony patches)
 
 ```csharp
-// Modifier la tempÃ©rature directement (en Kelvin)
-_climate.SetTemperature(283.15f);  // ~10Â°C
+// Modifier la température directement (en Kelvin)
+_climate.SetTemperature(283.15f);  // ~10°C
 
 // Modifier la pression d'un gaz (en kPa)
 _climate.SetGasPressure("CO2", 0.5f);
@@ -82,23 +82,23 @@ _climate.BoostTerraforming(boostFactor: 2.0f, durationMinutes: 30);
 ### Monitoring et diagnostics
 
 ```csharp
-string status  = _climate.GetStatus();         // Ã©tat court
-string detail  = _climate.GetDetailedClimateStatus(); // avec rÃ©gions
+string status  = _climate.GetStatus();         // état court
+string detail  = _climate.GetDetailedClimateStatus(); // avec régions
 
-// DonnÃ©es rÃ©gionales
+// Données régionales
 ClimateRegionData  regional  = _climate.GetRegionalClimateData();
 GlobalClimateAverages global = _climate.GetGlobalClimateAverages();
 Pole northPole = _climate.GetPolarRegionData(isNorthern: true);
 Pole southPole = _climate.GetPolarRegionData(isNorthern: false);
 EquatorialRegion equator = _climate.GetEquatorialRegionData();
 
-// TempÃ©ratures rapides (avec fallback)
+// Températures rapides (avec fallback)
 float north  = _climate.GetNorthPoleTemperature();  // Kelvin
 float south  = _climate.GetSouthPoleTemperature();
 float equat  = _climate.GetEquatorTemperature();
 ```
 
-### Effets de terraformation (Ã©vÃ©nements externes, Twitch, etc.)
+### Effets de terraformation (événements externes, Twitch, etc.)
 
 ```csharp
 // Ajouter un effet temporaire
@@ -109,7 +109,7 @@ _climate.AddTerraformingEffect("cold_snap", temperatureChange: -10f, source: "Ga
 ### Mode ressources
 
 ```csharp
-// Les pressions atmosphÃ©riques sont calculÃ©es depuis les stocks de ressources du jeu
+// Les pressions atmosphériques sont calculées depuis les stocks de ressources du jeu
 _climate.EnableResourceBasedMode();
 
 float co2Pressure = _climate.GetAtmosphericPressure("co2Pressure");
@@ -118,28 +118,28 @@ float o2Pressure  = _climate.GetAtmosphericPressure("o2Pressure");
 _climate.DisableResourceBasedMode(); // retour au mode simulation
 ```
 
-### Grille cellulaire atmosphÃ©rique
+### Grille cellulaire atmosphérique
 
 ```csharp
-// Activer/dÃ©sactiver des cellules individuelles
-_climate.ActivateAtmosphereCell(latIndex: 0, lonIndex: 0);   // pÃ´le nord
+// Activer/désactiver des cellules individuelles
+_climate.ActivateAtmosphereCell(latIndex: 0, lonIndex: 0);   // pôle nord
 _climate.DeactivateAtmosphereCell(latIndex: 5, lonIndex: 5);
 
-// AccÃ¨s direct Ã  la grille
+// Accès direct à la grille
 AtmosphereGrid? grid = _climate.AtmosphereGrid;
 int activeCells = _climate.GetActiveCellsCount();
 ```
 
-### Gaz atmosphÃ©riques custom (pour mods type MoreResources)
+### Gaz atmosphériques custom (pour mods type MoreResources)
 
 ```csharp
-_climate.RegisterAtmosphericGas("CH4", "MÃ©thane", "mbar");
+_climate.RegisterAtmosphericGas("CH4", "Méthane", "mbar");
 _climate.RegisterAtmosphericGas("Ar",  "Argon",   "mbar");
 ```
 
 ---
 
-## Cycle de mise Ã  jour
+## Cycle de mise à jour
 
 ```csharp
 // Appeler depuis un MonoBehaviour Update() ou coroutine
@@ -152,27 +152,27 @@ public class ClimateUpdater : MonoBehaviour
     private void Update() => _climate?.UpdateClimate(Time.deltaTime);
 }
 
-// Dans Load() aprÃ¨s EnableClimateControl :
+// Dans Load() après EnableClimateControl :
 var updater = AddComponent<ClimateUpdater>();
 updater.Init(_climate);
 ```
 
 ---
 
-## Configuration personnalisÃ©e
+## Configuration personnalisée
 
 ```csharp
-// CrÃ©er une config Ã©quilibrÃ©e (dÃ©faut)
+// Créer une config équilibrée (défaut)
 var config = ClimateConfig.CreateGameBalanced();
 
-// Ou instancier directement avec paramÃ¨tres custom
+// Ou instancier directement avec paramètres custom
 // (voir SDK\PerAspera.GameAPI\Climate\Configuration\ClimateConfig.cs)
 var controller = new ClimateController(config);
 ```
 
 ---
 
-## DÃ©sactivation propre
+## Désactivation propre
 
 ```csharp
 public override void Unload()
@@ -185,22 +185,22 @@ public override void Unload()
 
 ## Constantes Mars (baseline)
 
-| PropriÃ©tÃ© | Valeur | Notes |
+| Propriété | Valeur | Notes |
 |-----------|--------|-------|
-| TempÃ©rature de base | ~210 K (-63Â°C) | Mars non terraformÃ© |
-| Pression atmosphÃ©rique | 0.636 kPa | ~0.6% de la Terre |
-| COâ‚‚ | 95.32% | Gaz Ã  effet de serre dominant |
-| IntensitÃ© solaire | ~590 W/mÂ² | Orbite Mars |
-| Cible habitabilitÃ© | ~293 K (20Â°C) | Seuil minimal |
-| PÃ´le nord dÃ©faut | 200 K | Valeur fallback |
-| PÃ´le sud dÃ©faut | 195 K | LÃ©gÃ¨rement plus froid |
-| Ã‰quateur dÃ©faut | 250 K | Plus chaud |
+| Température de base | ~210 K (-63°C) | Mars non terraformé |
+| Pression atmosphérique | 0.636 kPa | ~0.6% de la Terre |
+| CO₂ | 95.32% | Gaz à effet de serre dominant |
+| Intensité solaire | ~590 W/m² | Orbite Mars |
+| Cible habitabilité | ~293 K (20°C) | Seuil minimal |
+| Pôle nord défaut | 200 K | Valeur fallback |
+| Pôle sud défaut | 195 K | Légèrement plus froid |
+| Équateur défaut | 250 K | Plus chaud |
 
 ---
 
-## RÃ©fÃ©rence source
+## Référence source
 
-- [ClimateController.cs](SDK/PerAspera.GameAPI/Climate/ClimateController.cs) â€” contrÃ´leur principal
-- [AtmosphereGrid.cs](SDK/PerAspera.GameAPI/Climate/Domain/Atmosphere/AtmosphereGrid.cs) â€” grille cellulaire
-- [ClimateConfig.cs](SDK/PerAspera.GameAPI/Climate/Configuration/ClimateConfig.cs) â€” configuration
-- [TerraformingEffectsController.cs](SDK/PerAspera.GameAPI/Climate/Patches/TerraformingEffectsPatches.cs) â€” effets dynamiques
+- [ClimateController.cs](SDK/PerAspera.GameAPI/Climate/ClimateController.cs) — contrôleur principal
+- [AtmosphereGrid.cs](SDK/PerAspera.GameAPI/Climate/Domain/Atmosphere/AtmosphereGrid.cs) — grille cellulaire
+- [ClimateConfig.cs](SDK/PerAspera.GameAPI/Climate/Configuration/ClimateConfig.cs) — configuration
+- [TerraformingEffectsController.cs](SDK/PerAspera.GameAPI/Climate/Patches/TerraformingEffectsPatches.cs) — effets dynamiques

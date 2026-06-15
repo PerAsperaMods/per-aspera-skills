@@ -9,7 +9,7 @@ license: MIT
 ---
 
 
-# Per Aspera Mod â€” Project Setup
+# Per Aspera Mod — Project Setup
 
 ## Prerequisites
 
@@ -49,7 +49,7 @@ Copier `Individual-Mods\_Template\VotreNomMod.csproj` et adapter :
     <RootNamespace>MyModName</RootNamespace>
     <LangVersion>latest</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <!-- BepInEx plugin metadata â€” auto-generates MyPluginInfo.cs -->
+    <!-- BepInEx plugin metadata — auto-generates MyPluginInfo.cs -->
     <BepInExPluginGuid>com.yourname.mymodname</BepInExPluginGuid>
     <BepInExPluginName>My Mod Name</BepInExPluginName>
     <BepInExPluginVersion>1.0.0</BepInExPluginVersion>
@@ -62,7 +62,7 @@ Copier `Individual-Mods\_Template\VotreNomMod.csproj` et adapter :
   </ItemGroup>
 
   <!--
-    SDK Per Aspera â€” 4 assemblies (consolidation 2026-06).
+    SDK Per Aspera — 4 assemblies (consolidation 2026-06).
     Private=false : les DLL vivent dans plugins/SDK/, pas dans le dossier du mod.
     En CI (GITHUB_ACTIONS=true) le workflow fournit les refs via Directory.Build.props.
   -->
@@ -73,18 +73,18 @@ Copier `Individual-Mods\_Template\VotreNomMod.csproj` et adapter :
     <ProjectReference Include="..\..\SDK\PerAspera.GameAPI\PerAspera.GameAPI.csproj">
       <Private>false</Private>
     </ProjectReference>
-    <!-- Optionnel â€” dÃ©commenter si le mod utilise ModDatabase (SQLite) :
+    <!-- Optionnel — décommenter si le mod utilise ModDatabase (SQLite) :
     <ProjectReference Include="..\..\SDK\PerAspera.GameAPI.Database\PerAspera.GameAPI.Database.csproj">
       <Private>false</Private>
     </ProjectReference> -->
   </ItemGroup>
 
-  <!-- Les DLLs du jeu sont ajoutÃ©es automatiquement par le Directory.Build.props racine -->
+  <!-- Les DLLs du jeu sont ajoutées automatiquement par le Directory.Build.props racine -->
 
 </Project>
 ```
 
-> â„¹ï¸ `Private=false` est essentiel : la DLL SDK est dÃ©jÃ  dans `plugins/SDK/` â€” l'inclure dans le dossier du mod crÃ©erait un doublon qui confond BepInEx.
+> ℹ️ `Private=false` est essentiel : la DLL SDK est déjà dans `plugins/SDK/` — l'inclure dans le dossier du mod créerait un doublon qui confond BepInEx.
 
 ---
 
@@ -97,7 +97,7 @@ Example: com.myname.climateoverhaul
 ```
 
 - **All lowercase** with dots and hyphens only  
-- **Must be unique** â€” used for BepInX plugin identification and config file naming  
+- **Must be unique** — used for BepInX plugin identification and config file naming  
 - **Never change** after releasing a mod (breaks existing configs)
 
 ---
@@ -115,7 +115,7 @@ public class MyPlugin : BasePlugin
 {
     public override void Load()
     {
-        // âœ… ALWAYS: Initialize SDK logger first
+        // ✅ ALWAYS: Initialize SDK logger first
         LogAspera.Initialize(Log, MyPluginInfo.PLUGIN_NAME);
         
         LogAspera.Info("Plugin loading...");
@@ -128,7 +128,7 @@ public class MyPlugin : BasePlugin
 
     private void OnGameFullyLoaded(GameFullyLoadedEvent evt)
     {
-        LogAspera.Info("Game fully loaded â€” accessing game data now.");
+        LogAspera.Info("Game fully loaded — accessing game data now.");
 
         var planet = GameApi.wrapper.planet;
         if (planet == null) return;
@@ -140,49 +140,49 @@ public class MyPlugin : BasePlugin
 
 **Critical rules:**
 - Always `BasePlugin`, NEVER `BaseUnityPlugin` (IL2CPP requirement)
-- NEVER access game data in `Load()` â€” game is not yet loaded
+- NEVER access game data in `Load()` — game is not yet loaded
 - Always wrap game access in event callbacks
 
 ---
 
-## 5. DÃ©ploiement â€” script central uniquement
+## 5. Déploiement — script central uniquement
 
-> **âš ï¸ RÃ¨gle absolue** : ne jamais ajouter un target MSBuild `DeployToGame` dans un `.csproj`.  
-> Le build auto-deploy crÃ©e des **doublons** (`plugins\ModName\` ET `plugins\ModName.dll`) et gÃ©nÃ¨re des conflits avec le script de dÃ©ploiement.
+> **⚠️ Règle absolue** : ne jamais ajouter un target MSBuild `DeployToGame` dans un `.csproj`.  
+> Le build auto-deploy crée des **doublons** (`plugins\ModName\` ET `plugins\ModName.dll`) et génère des conflits avec le script de déploiement.
 
 ```powershell
 # Depuis scripts\deployment\
-.\deploy.ps1 -CSharp          # Build + dÃ©ploie SDK + mods activÃ©s
+.\deploy.ps1 -CSharp          # Build + déploie SDK + mods activés
 .\deploy.ps1 -CSharp -SdkOnly # SDK seulement
-.\deploy.ps1 -CSharp -ModsOnly # Mods seulement (SDK dÃ©jÃ  dÃ©ployÃ©)
+.\deploy.ps1 -CSharp -ModsOnly # Mods seulement (SDK déjà déployé)
 .\deploy.ps1 -CSharp -SkipBuild # Copie les DLL existantes sans rebuild
 ```
 
-**Structure plugins attendue aprÃ¨s dÃ©ploiement :**
+**Structure plugins attendue après déploiement :**
 ```
 BepInEx\plugins\
-â”œâ”€â”€ SDK\                        â† SDK Per Aspera (PerAspera.Core.dll, etc.)
-â”œâ”€â”€ MyModName\                  â† un sous-dossier par mod (compatible Launcher)
-â”‚   â””â”€â”€ MyModName.dll
-â””â”€â”€ OtherMod\
-    â””â”€â”€ OtherMod.dll
+├── SDK\                        ← SDK Per Aspera (PerAspera.Core.dll, etc.)
+├── MyModName\                  ← un sous-dossier par mod (compatible Launcher)
+│   └── MyModName.dll
+└── OtherMod\
+    └── OtherMod.dll
 ```
 
-Pour les mods avec fichiers de donnÃ©es (JSON, configâ€¦), ajouter `extraFiles` dans `config-csharp-mods.json` :
+Pour les mods avec fichiers de données (JSON, config…), ajouter `extraFiles` dans `config-csharp-mods.json` :
 ```json
 { "name": "MyModName", "dll": "MyModName.dll", "enabled": true, "extraFiles": ["my-data.json"] }
 ```
-Le fichier est copiÃ© depuis la racine du projet vers `plugins/MyModName/`.
+Le fichier est copié depuis la racine du projet vers `plugins/MyModName/`.
 
 ---
 
 ## 6. VS Code Tasks Available
 
-Open Command Palette â†’ `Tasks: Run Task`:
+Open Command Palette → `Tasks: Run Task`:
 
 | Task | Purpose |
 |------|---------|
-| **SDK: Build and Deploy** | Build SDK + dÃ©ploie via deploy.ps1 |
+| **SDK: Build and Deploy** | Build SDK + déploie via deploy.ps1 |
 | **SDK: Deploy DLLs to BepInX** | Deploy only (skip rebuild) |
 | **Watch BepInX Logs** | Tail-follow `LogOutput.log` live |
 | **Watch Main BepInX Log** | Same, focused on main log |
@@ -191,11 +191,11 @@ Open Command Palette â†’ `Tasks: Run Task`:
 
 ## 7. First Build Checklist
 
-- [ ] **Jeu fermÃ©** avant de builder/dÃ©ployer (Windows verrouille les DLL en mÃ©moire)
+- [ ] **Jeu fermé** avant de builder/déployer (Windows verrouille les DLL en mémoire)
 - [ ] `.\deploy.ps1 -CSharp` sans erreur  
-- [ ] `MyModName.dll` apparaÃ®t dans `...\BepInEx\plugins\MyModName\` (sous-dossier crÃ©Ã© par deploy.ps1)
+- [ ] `MyModName.dll` apparaît dans `...\BepInEx\plugins\MyModName\` (sous-dossier créé par deploy.ps1)
 - [ ] Lancer Per Aspera  
-- [ ] VÃ©rifier `...\BepInEx\LogOutput.log` â€” votre GUID doit apparaÃ®tre  
+- [ ] Vérifier `...\BepInEx\LogOutput.log` — votre GUID doit apparaître  
 - [ ] Chercher `Plugin loaded successfully` de votre mod  
 - [ ] Aucun `MissingMethodException` ou `TypeLoadException` dans les logs  
 
@@ -203,8 +203,8 @@ Open Command Palette â†’ `Tasks: Run Task`:
 
 ## Reference Files
 
-- `Individual-Mods\_Template\VotreNomMod.csproj` â€” Template csproj Ã  copier
-- `scripts\deployment\config-csharp-mods.json` â€” Config dÃ©ploiement (activer/extraFiles)
-- `Tools\InteropDump\ScriptsAssembly\` â€” ~600 proxies C# typÃ©s (vÃ©rifier les membres avant binding)
-- `Organization-Wiki\getting-started\Installation.md` â€” Full installation guide  
-- `Organization-Wiki\getting-started\First-Mod.md` â€” 15-minute tutorial  
+- `Individual-Mods\_Template\VotreNomMod.csproj` — Template csproj à copier
+- `scripts\deployment\config-csharp-mods.json` — Config déploiement (activer/extraFiles)
+- `Tools\InteropDump\ScriptsAssembly\` — ~600 proxies C# typés (vérifier les membres avant binding)
+- `Organization-Wiki\getting-started\Installation.md` — Full installation guide  
+- `Organization-Wiki\getting-started\First-Mod.md` — 15-minute tutorial  

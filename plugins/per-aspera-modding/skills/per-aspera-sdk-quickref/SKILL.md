@@ -9,7 +9,7 @@ license: MIT
 ---
 
 
-# Per Aspera SDK â€” Quick Reference
+# Per Aspera SDK — Quick Reference
 
 ## Access Patterns (The Golden Table)
 
@@ -19,20 +19,20 @@ license: MIT
 | Planet | `GameApi.wrapper.planet` | `Native.planet` |
 | Universe | `GameApi.wrapper.universe` | `Native.universe` |
 | Resource types | `GameApi.wrapper.resourcetype` | `Native.resourcetype` |
-| Singleton helpers | `PlanetWrapper.GetCurrent()` | â€” |
-| Singleton helpers | `BaseGameWrapper.GetCurrent()` | â€” |
-| Singleton helpers | `UniverseWrapper.GetCurrent()` | â€” |
+| Singleton helpers | `PlanetWrapper.GetCurrent()` | — |
+| Singleton helpers | `BaseGameWrapper.GetCurrent()` | — |
+| Singleton helpers | `UniverseWrapper.GetCurrent()` | — |
 
 **Rule**: Use `GameApi.wrapper.*` for SDK functionality (safe, null-protected). Use `Native.*` only for IL2CPP interop that has no SDK equivalent.
 
 ---
 
-## SDK References â€” ProjectReference (workspace)
+## SDK References — ProjectReference (workspace)
 
-Dans le workspace ``, les mods rÃ©fÃ©rencent le SDK via `ProjectReference` :
+Dans le workspace ``, les mods référencent le SDK via `ProjectReference` :
 
 ```xml
-<!-- Dans le .csproj du mod â€” Private=false car le SDK vit dans plugins/SDK/ -->
+<!-- Dans le .csproj du mod — Private=false car le SDK vit dans plugins/SDK/ -->
 <ItemGroup Condition="'$(GITHUB_ACTIONS)' != 'true'">
   <ProjectReference Include="..\..\SDK\PerAspera.Core\PerAspera.Core.csproj">
     <Private>false</Private>
@@ -44,16 +44,16 @@ Dans le workspace ``, les mods rÃ©fÃ©rencent le SDK via `ProjectReference` :
 ```
 
 Les 4 assemblies SDK (consolidation 2026-06) :
-- `PerAspera.Core` â€” logging, utils + IL2CppExtensions (interop bas-niveau)
-- `PerAspera.GameAPI` â€” accÃ¨s jeu : Native, Events, Commands, Wrappers, Climate, Overrides, UI
-- `PerAspera.GameAPI.Database` â€” SQLite isolÃ© (dÃ©commenter dans csproj si besoin)
-- `PerAspera.ModSDK` â€” API publique unifiÃ©e (faÃ§ade)
+- `PerAspera.Core` — logging, utils + IL2CppExtensions (interop bas-niveau)
+- `PerAspera.GameAPI` — accès jeu : Native, Events, Commands, Wrappers, Climate, Overrides, UI
+- `PerAspera.GameAPI.Database` — SQLite isolé (décommenter dans csproj si besoin)
+- `PerAspera.ModSDK` — API publique unifiée (façade)
 
-> Pour les consommateurs externes (CI, moddeurs hors workspace) : `SDK_DLL\sdkDLL.props` est un alias qui rÃ©fÃ©rence les 4 DLLs compilÃ©es. Le template mod (`_Template\`) utilise la convention `ProjectReference`.
+> Pour les consommateurs externes (CI, moddeurs hors workspace) : `SDK_DLL\sdkDLL.props` est un alias qui référence les 4 DLLs compilées. Le template mod (`_Template\`) utilise la convention `ProjectReference`.
 
 ---
 
-## LogAspera â€” SDK Logger
+## LogAspera — SDK Logger
 
 Always initialize at the start of `Load()`:
 
@@ -62,7 +62,7 @@ using PerAspera.Core.Logging;
 
 public override void Load()
 {
-    LogAspera.Initialize(Log, MyPluginInfo.PLUGIN_NAME);   // âœ… Required first
+    LogAspera.Initialize(Log, MyPluginInfo.PLUGIN_NAME);   // ✅ Required first
 
     LogAspera.Info("Message");        // [Info] ModName: Message
     LogAspera.Warning("Watch out");   // [Warning] ...
@@ -72,7 +72,7 @@ public override void Load()
 
 ---
 
-## EnhancedEventBus â€” Core Events
+## EnhancedEventBus — Core Events
 
 Subscribe in `Load()`, receive data in your callback:
 
@@ -80,30 +80,30 @@ Subscribe in `Load()`, receive data in your callback:
 using PerAspera.GameAPI.Events.Integration; // EnhancedEventBus
 using PerAspera.GameAPI.Events.SDK;         // GameCommandsReadyEvent, etc.
 
-// âœ… RECOMMANDÃ‰ â€” accÃ¨s complet Planet + InteractionManager + Commands
+// ✅ RECOMMANDÉ — accès complet Planet + InteractionManager + Commands
 EnhancedEventBus.SubscribeToGameCommandsReady(OnCommandsReady);
 private void OnCommandsReady(GameCommandsReadyEvent evt)
 {
-    // evt.NativeBaseGame, evt.NativeUniverse, evt.NativePlanet, evt.NativePlayerFaction â€” tous non-null
+    // evt.NativeBaseGame, evt.NativeUniverse, evt.NativePlanet, evt.NativePlayerFaction — tous non-null
 }
 
-// âœ… Reset entre sessions (new game / load) â€” remplace le polling alreadyWokeUp
+// ✅ Reset entre sessions (new game / load) — remplace le polling alreadyWokeUp
 EnhancedEventBus.SubscribeToGameSessionStarted(evt => { /* evt.IsNewGame */ });
 
-// âœ… UI ready â€” canvasRefs.notificationPresenter disponible
+// ✅ UI ready — canvasRefs.notificationPresenter disponible
 EnhancedEventBus.SubscribeToGameUIReady(evt => { /* GameUI.ShowNotification ok */ });
 
-// âœ… Save loaded (returning to game from menu)
+// ✅ Save loaded (returning to game from menu)
 EnhancedEventBus.SubscribeToOnLoadFinished(OnLoadFinished);
 ```
 
 **Quand utiliser quel event :**
-- `GameCommandsReady` â†’ âœ… **Pattern recommandÃ©** â€” accÃ¨s complet, Commands.Initialize() requis ici.
-- `GameSessionStarted` â†’ Reset Ã©tat mod entre parties/chargements.
-- `GameUIReady` â†’ Notifications UI, HUD.
-- `OnLoadFinished` â†’ Re-init post rechargement de sauvegarde.
+- `GameCommandsReady` → ✅ **Pattern recommandé** — accès complet, Commands.Initialize() requis ici.
+- `GameSessionStarted` → Reset état mod entre parties/chargements.
+- `GameUIReady` → Notifications UI, HUD.
+- `OnLoadFinished` → Re-init post rechargement de sauvegarde.
 
-### NativeEventHub â€” Events Natifs (bref)
+### NativeEventHub — Events Natifs (bref)
 
 ```csharp
 using PerAspera.GameAPI.Events.Native;
@@ -111,38 +111,38 @@ using PerAspera.GameAPI.Events.Native;
 // Appliquer une fois dans Load()
 NativeEventHub.Apply(new Harmony("com.mymod.id"));
 
-// S'abonner Ã  n'importe lequel des 121 events natifs
+// S'abonner à n'importe lequel des 121 events natifs
 NativeEventHub.Subscribe(NativeGameEvent.BuildingBuilt, args => {
-    var building = args.ResolveBuilding(universe.keeper); // Handle â†’ Building
+    var building = args.ResolveBuilding(universe.keeper); // Handle → Building
 });
 ```
 
-Voir `/per-aspera-events-sdk` pour la rÃ©fÃ©rence complÃ¨te (NativeGameEvent enum, NativeEventExtensions).
+Voir `/per-aspera-events-sdk` pour la référence complète (NativeGameEvent enum, NativeEventExtensions).
 
 ---
 
-## Planet Wrapper â€” Common Properties
+## Planet Wrapper — Common Properties
 
 ```csharp
 var planet = GameApi.wrapper.planet;
 if (planet == null) return;
 
-// âœ… Basic info
+// ✅ Basic info
 string name         = planet.Name;
 
-// âœ… SDK-EXCLUSIVE: Resource stocks
+// ✅ SDK-EXCLUSIVE: Resource stocks
 float water         = planet.WaterStock;
 float silicon       = planet.SiliconStock;
 float iron          = planet.IronStock;
 float carbon        = planet.CarbonStock;
 
-// âœ… SDK-EXCLUSIVE: Atmosphere (not available in vanilla Planet)
+// ✅ SDK-EXCLUSIVE: Atmosphere (not available in vanilla Planet)
 var atmosphere      = planet.Atmosphere;
 float temperature   = atmosphere.Temperature;
 float totalPressure = atmosphere.TotalPressure;
 float co2           = atmosphere.Composition["CO2"].PartialPressure;
 
-// âœ… Safe building access
+// ✅ Safe building access
 var buildings       = planet.GetBuildingsSafely();
 ```
 
@@ -152,23 +152,23 @@ var buildings       = planet.GetBuildingsSafely();
 
 ```
 Need to access/modify game data?
-         â”‚
-         â–¼
+         │
+         ▼
 Check docs\Capabilities-Matrix.md
-         â”‚
-    â”Œâ”€â”€â”€â”€â”´â”€â”€â”€â”€â”
+         │
+    ┌────┴────┐
    SDK has   SDK doesn't
    it?        have it?
-    â”‚              â”‚
-    â–¼              â–¼
+    │              │
+    ▼              ▼
 Use GameApi    Check Tools/InteropDump/ScriptsAssembly\
 wrapper        for raw IL2CPP fields/methods
-                   â”‚
-              â”Œâ”€â”€â”€â”€â”´â”€â”€â”€â”€â”
+                   │
+              ┌────┴────┐
          Direct IL2CPP  Need to
          access OK?      INTERCEPT?
-              â”‚               â”‚
-              â–¼               â–¼
+              │               │
+              ▼               ▼
          Native.*       HarmonyX Patch
                      (@per-aspera-bepinx-core)
 ```
@@ -197,7 +197,7 @@ public class MyPlugin : BasePlugin
         _log = new LogAspera(MyPluginInfo.PLUGIN_NAME);
         _log.Info("Loading...");
 
-        // âœ… Pattern recommandÃ© â€” accÃ¨s complet dÃ¨s le premier Update()
+        // ✅ Pattern recommandé — accès complet dès le premier Update()
         EnhancedEventBus.SubscribeToGameCommandsReady(OnGameCommandsReady);
     }
 
@@ -213,12 +213,12 @@ public class MyPlugin : BasePlugin
 
 ## SDK Components Summary
 
-> **2026-06 consolidation**: 11 projets â†’ 4 assemblies. Les namespaces sont inchangÃ©s.
+> **2026-06 consolidation**: 11 projets → 4 assemblies. Les namespaces sont inchangés.
 
 | Assembly (DLL) | Namespaces inclus | Use for |
 |----------------|-------------------|---------|
-| `PerAspera.Core` | `PerAspera.Core.*`, `PerAspera.Core.IL2CPP` | Logging, utils, IL2CppExtensions (ToCSharp, ToCSharpArrayâ€¦) |
-| `PerAspera.GameAPI` | `PerAspera.GameAPI`, `.Climate`, `.Commands`, `.Events`, `.Overrides`, `.Wrappers`, `.UI` | Tout l'accÃ¨s jeu â€” wrappers, events, commands, climate |
+| `PerAspera.Core` | `PerAspera.Core.*`, `PerAspera.Core.IL2CPP` | Logging, utils, IL2CppExtensions (ToCSharp, ToCSharpArray…) |
+| `PerAspera.GameAPI` | `PerAspera.GameAPI`, `.Climate`, `.Commands`, `.Events`, `.Overrides`, `.Wrappers`, `.UI` | Tout l'accès jeu — wrappers, events, commands, climate |
 | `PerAspera.GameAPI.Database` | `PerAspera.GameAPI.Database` | SQLite mod data store |
 | `PerAspera.ModSDK` | `PerAspera.ModSDK` | Plugin base classes, SDK entry point |
 
@@ -226,8 +226,10 @@ public class MyPlugin : BasePlugin
 
 ## Reference Files
 
-- `docs\Capabilities-Matrix.md` â€” Vanilla vs SDK comparison table (2026-06)
-- `docs\Planet-Enhanced.md` â€” Planet wrapper full documentation (2026-06)
-- `Organization-Wiki\reference\Game-Commands.md` â€” 55 validated game commands
-- `Individual-Mods\_Template\VotreNomMod.csproj` â€” Template csproj de rÃ©fÃ©rence
-- `Tools\InteropDump\ScriptsAssembly\` â€” ~600 proxies C# (vÃ©rifier membres avant binding)
+- `docs\Capabilities-Matrix.md` — Vanilla vs SDK comparison table (2026-06)
+- `docs\Planet-Enhanced.md` — Planet wrapper full documentation (2026-06)
+- `Organization-Wiki\reference\Game-Commands.md` — 55 validated game commands
+- `Individual-Mods\_Template\VotreNomMod.csproj` — Template csproj de référence
+- `Tools\InteropDump\ScriptsAssembly\` — ~1000 proxies C# (vérifier membres avant binding)
+  - Classe précise : `InteropDump\ScriptsAssembly\<ClassName>.cs`
+  - Namespace entier (~10k tokens) : `.\Tools\Extract-Signatures.ps1 -Pattern <Namespace>` → `InteropDump\_bundles\<Namespace>.sig.md`

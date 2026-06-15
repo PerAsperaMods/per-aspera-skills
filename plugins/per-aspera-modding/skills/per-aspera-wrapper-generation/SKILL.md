@@ -8,12 +8,12 @@ description: >
 license: MIT
 ---
 
-# Wrapper Generation & Enrichment â€” Complete Guide
+# Wrapper Generation & Enrichment — Complete Guide
 
-> **Doctrine (2026-06) : interop typÃ© d'abord.** Les proxies Il2CppInterop (`Planet`,
-> `Building`, `Faction`â€¦) donnent un accÃ¨s typÃ© compile-time. Un wrapper dÃ©lÃ¨gue au proxy ;
+> **Doctrine (2026-06) : interop typé d'abord.** Les proxies Il2CppInterop (`Planet`,
+> `Building`, `Faction`…) donnent un accès typé compile-time. Un wrapper délègue au proxy ;
 > `SafeInvoke`/`SafeGetField` ne servent que pour les membres natifs inaccessibles
-> (privÃ©s/strippÃ©s). Audit : `docs\SDK-CRITICAL-REVIEW.md` Â·
+> (privés/strippés). Audit : `docs\SDK-CRITICAL-REVIEW.md` ·
 > Migration pilote : `PlanetWrapper`. Voir aussi `/per-aspera-wrappers-sdk`.
 
 ## Overview
@@ -57,98 +57,106 @@ public class MyClassWrapper : WrapperBase
 
 ## Step 2: Verify the native members (OBLIGATOIRE)
 
-**Avant d'Ã©crire la moindre propriÃ©tÃ©**, vÃ©rifier que le membre existe :
+**Avant d'écrire la moindre propriété**, vérifier que le membre existe :
 
-### Option A: Decompiled source (prÃ©fÃ©rÃ© â€” hors jeu)
-Check `Tools\InteropDump\ScriptsAssembly\YourClass.cs` (proxies typÃ©s â€” source de vÃ©ritÃ©)
-(ou `Tools\lispyExtract\YourClass.cs` pour le lookup par nom de classe).
+### Option A: Decompiled source (préféré — hors jeu)
 
-Noter pour chaque membre : **public ou privÃ© ?** propriÃ©tÃ©, champ ou mÃ©thode ?
-
-### Option B: IL2CppDebugDumper (runtime â€” structure rÃ©elle)
-```csharp
-IL2CppDebugDumper.DumpObjectToFile(instance, "ClassName");
-// â†’ BepInEx/Debug/IL2CPP-ClassName-timestamp.txt
-IL2CppDebugDumper.FindMembersToFile(instance, "propertyName");
-// â†’ BepInEx/Debug/IL2CPP-Search-propertyName-timestamp.txt
+Si tu explores un **namespace entier** (ex: nouveau wrapper sur un système inconnu) :
+```powershell
+.\Tools\Extract-Signatures.ps1 -Pattern Routing   # types + membres publics, ~10k tokens
+# → InteropDump\_bundles\Routing.sig.md
 ```
 
-> âš ï¸ **Ne jamais deviner.** Un `SafeInvoke` vers un membre inexistant ne lÃ¨ve aucune
-> erreur â€” il retourne `default(T)` en silence. C'est comme Ã§a que PlanetWrapper a
-> livrÃ© pendant des mois des API fantÃ´mes (`GetResourceStock`, `GetBuildings`) qui
+Si tu cherches **une classe précise** :
+Check `Tools\InteropDump\ScriptsAssembly\YourClass.cs` (proxies typés — source de vérité)
+(ou `Tools\lispyExtract\YourClass.cs` pour le fallback par nom de classe).
+
+Noter pour chaque membre : **public ou privé ?** propriété, champ ou méthode ?
+
+### Option B: IL2CppDebugDumper (runtime — structure réelle)
+```csharp
+IL2CppDebugDumper.DumpObjectToFile(instance, "ClassName");
+// → BepInEx/Debug/IL2CPP-ClassName-timestamp.txt
+IL2CppDebugDumper.FindMembersToFile(instance, "propertyName");
+// → BepInEx/Debug/IL2CPP-Search-propertyName-timestamp.txt
+```
+
+> ⚠️ **Ne jamais deviner.** Un `SafeInvoke` vers un membre inexistant ne lève aucune
+> erreur — il retourne `default(T)` en silence. C'est comme ça que PlanetWrapper a
+> livré pendant des mois des API fantômes (`GetResourceStock`, `GetBuildings`) qui
 > retournaient toujours 0/vide : les membres n'existaient pas sur Planet.
 
 ---
 
-## Step 3: Enrich â€” typed first
+## Step 3: Enrich — typed first
 
-### 3a. Exposer le proxy typÃ©
+### 3a. Exposer le proxy typé
 
 ```csharp
 public class MyClassWrapper : WrapperBase
 {
     public MyClassWrapper(object native) : base(native) { }
-    public MyClassWrapper(MyClass native) : base(native) { }   // overload typÃ©
+    public MyClassWrapper(MyClass native) : base(native) { }   // overload typé
 
-    /// <summary>Proxy interop typÃ© (null si wrapper invalide).</summary>
+    /// <summary>Proxy interop typé (null si wrapper invalide).</summary>
     public MyClass? Native => GetNativeObject() as MyClass;
 ```
 
-### 3b. Membres PUBLICS â†’ appel typÃ© (prÃ©fÃ©rÃ©)
+### 3b. Membres PUBLICS → appel typé (préféré)
 
 ```csharp
-    // âœ… PropriÃ©tÃ© publique native â†’ dÃ©lÃ©gation typÃ©e (erreur de build si le jeu change)
+    // ✅ Propriété publique native → délégation typée (erreur de build si le jeu change)
     public string Name => Native?.name ?? "Unknown";
     public float ProductionRate => Native?.productionRate ?? 0f;
     public bool IsConstructed => Native?.isConstructed ?? false;
 
-    // âœ… MÃ©thodes publiques natives
+    // ✅ Méthodes publiques natives
     public void Construct() => Native?.Construct();
     public float GetProduction() => Native?.GetProduction() ?? 0f;
 
-    // âœ… Objet enfant wrappÃ©
+    // ✅ Objet enfant wrappé
     public BuildingTypeWrapper? GetBuildingType()
         => BuildingTypeWrapper.FromNative(Native?.buildingType);
 ```
 
-### 3c. Membres PRIVÃ‰S/inaccessibles â†’ SafeInvoke/SafeGetField (fallback)
+### 3c. Membres PRIVÉS/inaccessibles → SafeInvoke/SafeGetField (fallback)
 
 ```csharp
-    // âš ï¸ Champ privÃ© natif â€” vÃ©rifiÃ© dans le dump, inaccessible au proxy
+    // ⚠️ Champ privé natif — vérifié dans le dump, inaccessible au proxy
     public bool IsAlive => SafeGetField<bool>("_alive");
 
-    // âš ï¸ Setter privÃ© â€” TryInvokeVoid pour dÃ©tecter l'Ã©chec (SafeInvokeVoid ne throw jamais)
+    // ⚠️ Setter privé — TryInvokeVoid pour détecter l'échec (SafeInvokeVoid ne throw jamais)
     public void SetInternalFlag(bool v)
     {
         if (!TryInvokeVoid("set_flag", v))
-            WrapperLog.Warning("set_flag introuvable â€” setter privÃ© ?");
+            WrapperLog.Warning("set_flag introuvable — setter privé ?");
     }
 ```
 
-> Rappel RS0030 : toute rÃ©flexion directe (`GetMethod`/`GetField`/`Invoke`) hors de
-> `PerAspera.Core.IL2CppExtensions` lÃ¨ve un warning BannedApiAnalyzers. Les helpers
-> `Safe*`/`Try*` de WrapperBase sont le chemin autorisÃ© pour le fallback.
+> Rappel RS0030 : toute réflexion directe (`GetMethod`/`GetField`/`Invoke`) hors de
+> `PerAspera.Core.IL2CppExtensions` lève un warning BannedApiAnalyzers. Les helpers
+> `Safe*`/`Try*` de WrapperBase sont le chemin autorisé pour le fallback.
 
 ---
 
-## âŒ APIs qui N'EXISTENT PAS (hallucinations frÃ©quentes)
+## ❌ APIs qui N'EXISTENT PAS (hallucinations fréquentes)
 
-| Hallucination | RÃ©alitÃ© |
+| Hallucination | Réalité |
 |---------------|---------|
-| `GetProperty<T>("name")` | N'existe pas sur WrapperBase â€” proxy typÃ© ou `SafeInvoke<T>("get_name")` |
-| `InvokeMethod("X")` dans un wrapper | RÃ©servÃ© IL2CppExtensions â€” utiliser proxy typÃ© ou `SafeInvokeVoid`/`TryInvokeVoid` |
-| `WrapperFactory.ConvertToWrapper<T>()` | N'existe pas â€” utiliser `FromNative()` |
-| `IL2CppPropertyReader.ReadProperty<T>(name)` | Mauvaise signature â€” voir `/per-aspera-il2cpp-property-access` |
+| `GetProperty<T>("name")` | N'existe pas sur WrapperBase — proxy typé ou `SafeInvoke<T>("get_name")` |
+| `InvokeMethod("X")` dans un wrapper | Réservé IL2CppExtensions — utiliser proxy typé ou `SafeInvokeVoid`/`TryInvokeVoid` |
+| `WrapperFactory.ConvertToWrapper<T>()` | N'existe pas — utiliser `FromNative()` |
+| `IL2CppPropertyReader.ReadProperty<T>(name)` | Mauvaise signature — voir `/per-aspera-il2cpp-property-access` |
 
 ---
 
 ## Naming Convention
 
-- PropriÃ©tÃ© wrapper en **PascalCase**, dÃ©lÃ¨gue au membre natif tel quel :
+- Propriété wrapper en **PascalCase**, délègue au membre natif tel quel :
   `public string Name => Native?.name ?? "Unknown";`
-- Types de retour : **non-nullables avec dÃ©faut explicite** pour les types valeur
-  (`float` + `?? 0f`), nullable pour les rÃ©fÃ©rences (`string?` acceptable aussi).
-- Documenter chaque membre fallback avec la raison : `// champ privÃ© natif (dump vÃ©rifiÃ©)`.
+- Types de retour : **non-nullables avec défaut explicite** pour les types valeur
+  (`float` + `?? 0f`), nullable pour les références (`string?` acceptable aussi).
+- Documenter chaque membre fallback avec la raison : `// champ privé natif (dump vérifié)`.
 
 ---
 
@@ -158,19 +166,19 @@ public class MyClassWrapper : WrapperBase
 dotnet build SDK\SDK.sln
 ```
 
-Avec la dÃ©lÃ©gation typÃ©e, **le build EST le test d'existence des membres publics**.
-Seuls les bindings string-based (fallback) nÃ©cessitent une vÃ©rification runtime.
+Avec la délégation typée, **le build EST le test d'existence des membres publics**.
+Seuls les bindings string-based (fallback) nécessitent une vérification runtime.
 
 ---
 
 ## Common Patterns
 
-### Valeur avec dÃ©faut
+### Valeur avec défaut
 ```csharp
 public float Temperature => Native?.GetAverageTemperature() ?? 0f;
 ```
 
-### Collection IL2CPP â†’ managed
+### Collection IL2CPP → managed
 ```csharp
 public List<BuildingWrapper> GetBuildings()
 {
@@ -183,15 +191,15 @@ public List<BuildingWrapper> GetBuildings()
 }
 ```
 
-### Cache (seulement si mesurÃ© nÃ©cessaire)
+### Cache (seulement si mesuré nécessaire)
 ```csharp
 private string? _cachedName;
 public string? Name => _cachedName ??= Native?.name;
 ```
 
-### Enum natif exposÃ© proprement
+### Enum natif exposé proprement
 ```csharp
-public POIType? PoiType => Native?.poiType;            // typÃ© si le proxy l'expose
+public POIType? PoiType => Native?.poiType;            // typé si le proxy l'expose
 public string PoiTypeName => Native?.poiType.ToString() ?? "Unknown";
 ```
 
@@ -199,10 +207,10 @@ public string PoiTypeName => Native?.poiType.ToString() ?? "Unknown";
 
 ## Lessons from PointOfInterest Discovery (historique)
 
-1. **Don't trust property names from guessing** â€” "category" seemed logical but doesn't exist. Use the dump.
-2. **Property types aren't what you think** â€” poiType is POIType (enum), not String. Le proxy typÃ© rend Ã§a visible Ã  la compilation.
-3. **GetProperty n'a jamais existÃ©** â€” c'Ã©tait une hallucination documentÃ©e ; proxy typÃ© ou `SafeInvoke<T>("get_x")`.
-4. **Un binding string-based qui Ã©choue est SILENCIEUX** â€” d'oÃ¹ la rÃ¨gle Â« vÃ©rifier dans le dump d'abord Â».
+1. **Don't trust property names from guessing** — "category" seemed logical but doesn't exist. Use the dump.
+2. **Property types aren't what you think** — poiType is POIType (enum), not String. Le proxy typé rend ça visible à la compilation.
+3. **GetProperty n'a jamais existé** — c'était une hallucination documentée ; proxy typé ou `SafeInvoke<T>("get_x")`.
+4. **Un binding string-based qui échoue est SILENCIEUX** — d'où la règle « vérifier dans le dump d'abord ».
 
 ---
 
@@ -210,11 +218,11 @@ public string PoiTypeName => Native?.poiType.ToString() ?? "Unknown";
 
 ```
 1. Generate Shell        ./Generate-Wrappers.ps1
-2. VÃ©rifier les membres  dump dÃ©compilÃ© / IL2CppDebugDumper
+2. Vérifier les membres  dump décompilé / IL2CppDebugDumper
 3. Exposer Native        public MyClass? Native => GetNativeObject() as MyClass;
-4. Membres publics       dÃ©lÃ©gation typÃ©e (Native?.x)
-5. Membres privÃ©s        SafeGetField / TryInvokeVoid (documentÃ©s)
-6. Build                 dotnet build  â† valide les membres publics
+4. Membres publics       délégation typée (Native?.x)
+5. Membres privés        SafeGetField / TryInvokeVoid (documentés)
+6. Build                 dotnet build  ← valide les membres publics
 7. Done!                 var wrapper = new XWrapper(nativeObj);
 ```
 
@@ -222,8 +230,8 @@ public string PoiTypeName => Native?.poiType.ToString() ?? "Unknown";
 
 ## See Also
 
-- **/per-aspera-wrappers-sdk** â€” doctrine complÃ¨te, hiÃ©rarchie, WrapperBase API
-- **/per-aspera-il2cpp-property-access** â€” IL2CPP patterns & helpers
-- **WRAPPER-PROPERTIES-TEMPLATE.md** â€” copy-paste patterns (SDK repo)
-- **Generate-Wrappers.ps1** â€” auto-generate wrapper shells
-- **PlanetWrapper.cs** â€” migration pilote typÃ©e (exemple de rÃ©fÃ©rence)
+- **/per-aspera-wrappers-sdk** — doctrine complète, hiérarchie, WrapperBase API
+- **/per-aspera-il2cpp-property-access** — IL2CPP patterns & helpers
+- **WRAPPER-PROPERTIES-TEMPLATE.md** — copy-paste patterns (SDK repo)
+- **Generate-Wrappers.ps1** — auto-generate wrapper shells
+- **PlanetWrapper.cs** — migration pilote typée (exemple de référence)

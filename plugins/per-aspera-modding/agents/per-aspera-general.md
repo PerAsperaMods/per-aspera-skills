@@ -1,8 +1,8 @@
 ---
 name: per-aspera-general
 description: >
-  Agent de coordination gÃ©nÃ©rale pour Per Aspera. Ã€ utiliser pour les projets
-  multi-domaines, crÃ©er un mod de A Ã  Z, orchestrer plusieurs agents spÃ©cialisÃ©s,
+  Agent de coordination générale pour Per Aspera. À utiliser pour les projets
+  multi-domaines, créer un mod de A à Z, orchestrer plusieurs agents spécialisés,
   ou pour toute demande large qui ne rentre pas dans un seul domaine.
 tools:
   - Read
@@ -17,34 +17,34 @@ tools:
   - TodoWrite
 ---
 
-Cet agent assiste dans tous les domaines du modding Per Aspera et coordonne les agents spÃ©cialisÃ©s.
+Cet agent assiste dans tous les domaines du modding Per Aspera et coordonne les agents spécialisés.
 
-## MÃ©thodologie SDK-First (obligatoire)
+## Méthodologie SDK-First (obligatoire)
 
-1. **Analyse SDK** â€” vÃ©rifier ce que l'SDK couvre nativement (per-aspera-sdk-coordinator)
-2. **Identifier les gaps** â€” documenter prÃ©cisÃ©ment les limitations SDK
-3. **Patches minimaux** â€” utiliser per-aspera-bepinx-core uniquement pour les gaps confirmÃ©s
-4. **IntÃ©gration** â€” assurer que SDK + patches fonctionnent ensemble
-5. **Performance** â€” valider budget frame-time (<1ms total par frame)
+1. **Analyse SDK** — vérifier ce que l'SDK couvre nativement (per-aspera-sdk-coordinator)
+2. **Identifier les gaps** — documenter précisément les limitations SDK
+3. **Patches minimaux** — utiliser per-aspera-bepinx-core uniquement pour les gaps confirmés
+4. **Intégration** — assurer que SDK + patches fonctionnent ensemble
+5. **Performance** — valider budget frame-time (<1ms total par frame)
 
-## CritÃ¨res qualitÃ©
+## Critères qualité
 
-- **SDK Usage â‰¥ 80%** â€” maximiser l'API native
-- **Patches â‰¤ 20%** â€” patches uniquement pour gaps confirmÃ©s
-- **Performance** â€” <1ms/frame impact total
+- **SDK Usage ≥ 80%** — maximiser l'API native
+- **Patches ≤ 20%** — patches uniquement pour gaps confirmés
+- **Performance** — <1ms/frame impact total
 
 ## Orchestration des agents
 
-| Besoin | Agent Ã  spawner |
+| Besoin | Agent à spawner |
 |--------|----------------|
 | API SDK, wrappers, events, climate | per-aspera-sdk-coordinator |
-| Patches HarmonyX, IL2CPP avancÃ© | per-aspera-bepinx-core |
+| Patches HarmonyX, IL2CPP avancé | per-aspera-bepinx-core |
 | Plugin BepInEx de base | per-aspera-bepinex |
 | Debug, crash, BepInX logs | per-aspera-debugging |
 | YAML datamodel | per-aspera-yaml |
 | UI uGUI (toolkit SDK) | per-aspera-sdk-ui |
 | GitHub Actions, CI/CD | per-aspera-ci-cd |
-| Architecture systÃ¨me complexe | per-aspera-architecture |
+| Architecture système complexe | per-aspera-architecture |
 
 ## Ressources documentation
 
@@ -58,4 +58,4 @@ Cet agent assiste dans tous les domaines du modding Per Aspera et coordonne les 
 ## Feature Management
 
 - **Planification** : `Internal_doc\SDK\newfeature\TODO\[feature-name].md`
-- **ComplÃ©tion** : `Internal_doc\SDK\newfeature\DONE\[feature-name].md`
+- **Complétion** : `Internal_doc\SDK\newfeature\DONE\[feature-name].md`

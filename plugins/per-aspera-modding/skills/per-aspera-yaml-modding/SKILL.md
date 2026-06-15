@@ -3,45 +3,45 @@ name: per-aspera-yaml-modding
 description: >
   Per Aspera YAML modding reference. Use when creating or modifying building.yaml, resource.yaml,
   technology.yaml, knowledge.yaml, buildingCategory.yaml, or manifest.yaml. Covers all properties
-  with types and constraints, YAML tags (!building, !resource, !technologyâ€¦), index rules,
+  with types and constraints, YAML tags (!building, !resource, !technology…), index rules,
   materialType values, optionalManifests, setup types, and complete minimal examples validated
   against the official game datamodel.
 license: MIT
 ---
 
 
-# Per Aspera â€” YAML Modding Reference
+# Per Aspera — YAML Modding Reference
 
-## ðŸ“ Sources de vÃ©ritÃ© (juin 2026)
+## 📐 Sources de vérité (juin 2026)
 
 | Besoin | Source |
 |--------|--------|
-| **SchÃ©ma exact d'un type** (tous champs, y compris cachÃ©s/renommÃ©s) | `Organization-Wiki\yaml-modding\schemas\<Type>.md` (36 types, gÃ©nÃ©rÃ© du dump) |
-| SchÃ©mas machine-readable | `Tools\yaml-schemas.json` |
-| Fonctionnement du pipeline (manifest â†’ SharpYaml â†’ placeholders â†’ PostInitialize) | `Organization-Wiki\yaml-modding\YAML-Modding-Internals.md` |
-| Erreur cryptique (NRE silencieuse, crash diffÃ©rÃ©) | `Organization-Wiki\yaml-modding\YAML-Error-Decoder.md` |
-| **`invalid reference <id>`** au chargement | **PrioritÃ© 1 : vÃ©rifier les chemins dans `manifest.yaml`** â€” le fichier dÃ©finissant la clÃ© est absent ou mal rÃ©fÃ©rencÃ© (ex: `building.yaml` au lieu de `building/building.yaml`) |
-| RegÃ©nÃ©rer aprÃ¨s un patch du jeu | `python Tools\extract_yaml_schemas.py` |
+| **Schéma exact d'un type** (tous champs, y compris cachés/renommés) | `Organization-Wiki\yaml-modding\schemas\<Type>.md` (36 types, généré du dump) |
+| Schémas machine-readable | `Tools\yaml-schemas.json` |
+| Fonctionnement du pipeline (manifest → SharpYaml → placeholders → PostInitialize) | `Organization-Wiki\yaml-modding\YAML-Modding-Internals.md` |
+| Erreur cryptique (NRE silencieuse, crash différé) | `Organization-Wiki\yaml-modding\YAML-Error-Decoder.md` |
+| **`invalid reference <id>`** au chargement | **Priorité 1 : vérifier les chemins dans `manifest.yaml`** — le fichier définissant la clé est absent ou mal référencé (ex: `building.yaml` au lieu de `building/building.yaml`) |
+| Regénérer après un patch du jeu | `python Tools\extract_yaml_schemas.py` |
 
-DÃ©couvertes clÃ©s : `YamlMember(Name=â€¦)` renomme des champs (`_reservedRadius`â†’`reservedRadius`,
-`cubeMaterialName`â†’`cubeMaterial`) ; les sections manifest et champs inconnus sont **ignorÃ©s
-silencieusement** ; les rÃ©fÃ©rences `!tag` invalides ne plantent qu'Ã  `CompleteLoading()` (NRE diffÃ©rÃ©e).
+Découvertes clés : `YamlMember(Name=…)` renomme des champs (`_reservedRadius`→`reservedRadius`,
+`cubeMaterialName`→`cubeMaterial`) ; les sections manifest et champs inconnus sont **ignorés
+silencieusement** ; les références `!tag` invalides ne plantent qu'à `CompleteLoading()` (NRE différée).
 Le manifest supporte aussi : `person`, `aiplayer`, `behavior` (behavior trees!), `perspective`,
 `transition`, `lake`, `languages`.
 
-## âš ï¸ Golden Rules
+## ⚠️ Golden Rules
 
-1. **Never modify `index`** on existing entries â€” corrupts saves permanently
-2. **`index` is optional for new entries** â€” game assigns internally if omitted. Ne pas dÃ©finir manuellement sauf nÃ©cessitÃ© absolue.
-3. **Entry key = internal ID** (e.g. `building_my_mine`) â€” used in YAML references
-4. **Resources custom : toujours `materialType: Placeholder`** â€” tout autre type dÃ©clenche la gÃ©nÃ©ration de scatter/veines â†’ crash
-5. **Tous les champs sont sÃ©rialisables** â€” Per Aspera utilise un dÃ©sÃ©rialiseur YAML custom par rÃ©flexion : `private`, `protected` et `public` sont tous lisibles depuis YAML.
+1. **Never modify `index`** on existing entries — corrupts saves permanently
+2. **`index` is optional for new entries** — game assigns internally if omitted. Ne pas définir manuellement sauf nécessité absolue.
+3. **Entry key = internal ID** (e.g. `building_my_mine`) — used in YAML references
+4. **Resources custom : toujours `materialType: Placeholder`** — tout autre type déclenche la génération de scatter/veines → crash
+5. **Tous les champs sont sérialisables** — Per Aspera utilise un désérialiseur YAML custom par réflexion : `private`, `protected` et `public` sont tous lisibles depuis YAML.
 
 ---
 
-## manifest.yaml â€” Structure complÃ¨te
+## manifest.yaml — Structure complète
 
-Source de vÃ©ritÃ© : `<GameDir>\datamodel\manifest.yaml`
+Source de vérité : `<GameDir>\datamodel\manifest.yaml`
 
 ### Tous les types de setup disponibles
 
@@ -50,20 +50,20 @@ modId: "MyMod"
 compatibleGameVersions:
   - 1.8.x
 requiredMods:
-  - OtherModId       # mods dont ce mod dÃ©pend
+  - OtherModId       # mods dont ce mod dépend
 
-# â”€â”€ Setup files (tous optionnels) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-generalSetup: GeneralSetup.yaml        # paramÃ¨tres globaux du jeu
-initialSetup: InitialSetup.yaml        # Ã©tat initial de la partie
+# ── Setup files (tous optionnels) ──────────────────────────────────────
+generalSetup: GeneralSetup.yaml        # paramètres globaux du jeu
+initialSetup: InitialSetup.yaml        # état initial de la partie
 droneSetup: DroneSetup.yaml            # configuration des drones
 scatterSetup: ScatterSetup.yaml        # zones de scatter des ressources
 frontendSetup: FrontendSetup.yaml      # configuration UI
-planetSetup: PlanetSetup.yaml          # paramÃ¨tres planÃ¨te
-combatSetup: CombatSetup.yaml          # systÃ¨me de combat
+planetSetup: PlanetSetup.yaml          # paramètres planète
+combatSetup: CombatSetup.yaml          # système de combat
 waySetup: WaySetup.yaml                # routes et chemins
-maintenanceSetup: MaintenanceSetup.yaml # systÃ¨me de maintenance
+maintenanceSetup: MaintenanceSetup.yaml # système de maintenance
 
-# â”€â”€ Type lists (tous optionnels, replace: false = additive) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ── Type lists (tous optionnels, replace: false = additive) ────────────
 building:
   filenames: [building.yaml]
   replace: false   # false = additive (par-dessus vanilla), true = remplace tout
@@ -135,21 +135,21 @@ terraformingPlanCategory:
   filenames: [terraformingPlanCategory.yaml]
   replace: false
 
-# â”€â”€ Sous-manifests conditionnels â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ── Sous-manifests conditionnels ───────────────────────────────────────
 optionalManifests:
-  - manifest-biology.yaml    # chargÃ© seulement si ses requiredMods sont prÃ©sents
+  - manifest-biology.yaml    # chargé seulement si ses requiredMods sont présents
   - manifest-campaign.yaml
 ```
 
-### `optionalManifests` â€” Sous-manifests conditionnels
+### `optionalManifests` — Sous-manifests conditionnels
 
-Chaque sous-manifest est un fichier YAML sÃ©parÃ© avec ses propres `requiredMods`. Il est chargÃ© **seulement si tous ses `requiredMods` sont actifs**.
+Chaque sous-manifest est un fichier YAML séparé avec ses propres `requiredMods`. Il est chargé **seulement si tous ses `requiredMods` sont actifs**.
 
 ```yaml
 # manifest-biology.yaml
 modId: "MkAspera-Biology"         # optionnel dans sous-manifest
 requiredMods:
-  - MoreResourcesAndMines2        # chargÃ© seulement si MoreResourcesV2 est actif
+  - MoreResourcesAndMines2        # chargé seulement si MoreResourcesV2 est actif
 building:
   filenames:
     - MkAsperaBiology/building/base-game.yaml
@@ -161,7 +161,7 @@ technology:
   replace: false
 ```
 
-**Cas d'usage :** architecture modulaire, contenu conditionnel Ã  un DLC ou Ã  un autre mod, mode campaign vs sandbox.
+**Cas d'usage :** architecture modulaire, contenu conditionnel à un DLC ou à un autre mod, mode campaign vs sandbox.
 
 **Exemple BlueMars :** `<GameDir>\datamodel\BlueMars\manifest.yaml` utilise `optionalManifests: [manifest-campaign-bluemars.yaml]`
 
@@ -169,45 +169,45 @@ technology:
 
 1. Vanilla core (`modId: Core`)
 2. DLCs (`modId: BlueMars`)  
-3. Mods dans l'ordre dÃ©clarÃ©
+3. Mods dans l'ordre déclaré
 4. `optionalManifests` de chaque mod (si `requiredMods` satisfaits)
 
 ---
 
 ---
 
-## ðŸš« Anti-hallucination â€” PropriÃ©tÃ©s et syntaxes CONFIRMÃ‰ES INVALIDES
+## 🚫 Anti-hallucination — Propriétés et syntaxes CONFIRMÉES INVALIDES
 
-Ces erreurs ont causÃ© des crashes en jeu (confirmÃ©s sur patch 2026-06). **Ne jamais les utiliser.**
+Ces erreurs ont causé des crashes en jeu (confirmés sur patch 2026-06). **Ne jamais les utiliser.**
 
-### `resource.yaml` â€” `prefabName` doit correspondre au type physique du matÃ©rialType
+### `resource.yaml` — `prefabName` doit correspondre au type physique du matérialType
 
 ```yaml
-# âŒ CRASH (ArgumentException: Object to instantiate is null)
-# "Worker Drone" est un prefab de drone volant â€” pas de variante cube
+# ❌ CRASH (ArgumentException: Object to instantiate is null)
+# "Worker Drone" est un prefab de drone volant — pas de variante cube
 resource_my_kit:
   materialType: Manufactured
   prefabName: Worker Drone   # INVALIDE pour un type physique stockable
 
-# âœ… CORRECT â€” prefab cube physique
+# ✅ CORRECT — prefab cube physique
 resource_my_kit:
   materialType: Manufactured
   prefabName: Parts           # ou Electronics, Aluminum, Steel...
   cubeMaterial: ResourceCube
 ```
 
-**RÃ¨gle** : `materialType: Manufactured/Mined` â†’ `prefabName` doit Ãªtre un prefab de cube physique (Aluminum, Parts, Electronics...). Les prefabs de drones volants (Worker Drone, Repair Drone) sont rÃ©servÃ©s au `materialType: Released`.
+**Règle** : `materialType: Manufactured/Mined` → `prefabName` doit être un prefab de cube physique (Aluminum, Parts, Electronics...). Les prefabs de drones volants (Worker Drone, Repair Drone) sont réservés au `materialType: Released`.
 
-### `resource.yaml` â€” Resources custom â†’ toujours `materialType: Placeholder`
+### `resource.yaml` — Resources custom → toujours `materialType: Placeholder`
 
 ```yaml
-# âŒ CRASH (IndexOutOfRangeException) â€” le jeu tente de scatter/gÃ©nÃ©rer
+# ❌ CRASH (IndexOutOfRangeException) — le jeu tente de scatter/générer
 # des veines sur la carte pour les resources Mined/Manufactured
 resource_my_kit:
-  materialType: Manufactured   # â†’ scatter attempt â†’ IndexOutOfRange
-  materialType: Mined          # â†’ veine generation â†’ IndexOutOfRange
+  materialType: Manufactured   # → scatter attempt → IndexOutOfRange
+  materialType: Mined          # → veine generation → IndexOutOfRange
 
-# âœ… CORRECT â€” Placeholder dÃ©sactive toute gÃ©nÃ©ration de terrain
+# ✅ CORRECT — Placeholder désactive toute génération de terrain
 resource_my_kit:
   index: null                  # le jeu assigne automatiquement
   materialType: Placeholder
@@ -215,83 +215,83 @@ resource_my_kit:
   cubeMaterial: ResourceCube
 ```
 
-**Pattern confirmÃ©** depuis le mod MoreResources publiÃ© sur Steam Workshop (803050/3354509730).  
-`Placeholder` = resource existe dans le systÃ¨me mais sans impact terrain. Permet d'utiliser la resource comme `outputResource` de bÃ¢timent, `inputResources`, ou `requiredConstructionResources`.
+**Pattern confirmé** depuis le mod MoreResources publié sur Steam Workshop (803050/3354509730).  
+`Placeholder` = resource existe dans le système mais sans impact terrain. Permet d'utiliser la resource comme `outputResource` de bâtiment, `inputResources`, ou `requiredConstructionResources`.
 
-### `building.yaml` â€” Impossible de patcher `outputResource` vers une resource mod
+### `building.yaml` — Impossible de patcher `outputResource` vers une resource mod
 
 ```yaml
-# âŒ CRASH (ArgumentOutOfRangeException) â€” les tables d'affichage internes
-# sont indexÃ©es sur les resources vanilla uniquement
+# ❌ CRASH (ArgumentOutOfRangeException) — les tables d'affichage internes
+# sont indexées sur les resources vanilla uniquement
 building_drone_factory:
   !replace outputResource: !resource resource_mon_kit_custom   # INTERDIT
 
-# âœ… CORRECT â€” crÃ©er un NOUVEAU bÃ¢timent qui produit la resource custom
+# ✅ CORRECT — créer un NOUVEAU bâtiment qui produit la resource custom
 building_drone_workshop_1:
   categoryType: !buildingCategory category_ai
-  outputResource: !resource resource_mon_kit_custom   # OK sur un nouveau bÃ¢timent
+  outputResource: !resource resource_mon_kit_custom   # OK sur un nouveau bâtiment
   prefabName: DroneFactory_1
   ...
 ```
 
-**RÃ¨gle** : Ne JAMAIS patcher `outputResource` d'un bÃ¢timent vanilla vers une resource mod. CrÃ©er un nouveau bÃ¢timent dÃ©diÃ© Ã  la place.
+**Règle** : Ne JAMAIS patcher `outputResource` d'un bâtiment vanilla vers une resource mod. Créer un nouveau bâtiment dédié à la place.
 
-### `building.yaml` â€” `ModBuildings/` ne fonctionne pas en YAML (patch 1.8.x)
+### `building.yaml` — `ModBuildings/` ne fonctionne pas en YAML (patch 1.8.x)
 
 ```yaml
-# âŒ Crash silencieux ou null instantiate
+# ❌ Crash silencieux ou null instantiate
 building_my_building:
-  prefabName: ModBuildings/ModCoreBuilding01_1   # NON RÃ‰SOLU par le loader YAML
+  prefabName: ModBuildings/ModCoreBuilding01_1   # NON RÉSOLU par le loader YAML
 
-# âœ… Utiliser des prefabs vanilla
+# ✅ Utiliser des prefabs vanilla
 building_my_building:
   prefabName: ResearchLab    # ou MaintenanceFacility, DroneFactory_1...
 ```
 
-**Contexte** : La doc officielle mentionne `ModBuildings/` mais en pratique le chemin n'est pas rÃ©solu depuis le YAML sur le patch 1.8.x (confirmÃ© juin 2026). Ã€ rÃ©utiliser uniquement si un exemple officiel fonctionnel est trouvÃ©.
+**Contexte** : La doc officielle mentionne `ModBuildings/` mais en pratique le chemin n'est pas résolu depuis le YAML sur le patch 1.8.x (confirmé juin 2026). À réutiliser uniquement si un exemple officiel fonctionnel est trouvé.
 
-### `manifest.yaml` â€” `replace: false` orphelin cause une erreur de parsing
+### `manifest.yaml` — `replace: false` orphelin cause une erreur de parsing
 
 ```yaml
-# âŒ ERREUR DE PARSING â€” replace: false hors d'une section
+# ❌ ERREUR DE PARSING — replace: false hors d'une section
 #enhancements:
 #  filenames:
 #    - enhancements.yaml
 
-  replace: false   # â† ORPHELIN, non commentÃ© â†’ crash au chargement du mod
+  replace: false   # ← ORPHELIN, non commenté → crash au chargement du mod
 
-# âœ… Tout commenter ou tout dÃ©commenter ensemble
+# ✅ Tout commenter ou tout décommenter ensemble
 #enhancements:
 #  filenames:
 #    - enhancements.yaml
 #  replace: false
 ```
 
-### `technology.yaml` â€” `requirements` n'accepte que `!technology`
+### `technology.yaml` — `requirements` n'accepte que `!technology`
 
 ```yaml
-# âŒ CRASH â€” QuestType cannot be converted to TechnologyType
+# ❌ CRASH — QuestType cannot be converted to TechnologyType
 technology_my_tech:
   requirements:
     - !quest my_quest      # INVALIDE
 
-# âœ… CORRECT
+# ✅ CORRECT
 technology_my_tech:
   requirements:
     - !technology tech_prereq
 ```
 
-Pour gater une tech derriÃ¨re une quÃªte : soit la quÃªte unlock la tech via une action (si `UnlockTechnology` existe), soit utiliser un prÃ©requis tech accessible mais avec des points Ã©levÃ©s.
+Pour gater une tech derrière une quête : soit la quête unlock la tech via une action (si `UnlockTechnology` existe), soit utiliser un prérequis tech accessible mais avec des points élevés.
 
-### `quest.yaml` â€” Pas de propriÃ©tÃ© `rewards:`
+### `quest.yaml` — Pas de propriété `rewards:`
 
 ```yaml
-# âŒ CRASH â€” propriÃ©tÃ© inconnue, cause une erreur de dÃ©sÃ©rialisation
+# ❌ CRASH — propriété inconnue, cause une erreur de désérialisation
 my_quest:
   rewards:
     - !QuestRewardUnlockKnowledge   # N'EXISTE PAS
 
-# âœ… Structure quÃªte valide
+# ✅ Structure quête valide
 my_quest:
   name: MY_QUEST_NAME
   description: MY_QUEST_DESC
@@ -303,40 +303,40 @@ my_quest:
   unlockAutomatically: true
 ```
 
-### IcÃ´nes â€” Toujours valider les chemins sprite
+### Icônes — Toujours valider les chemins sprite
 
-Le jeu logue `Sprite at path X couldn't be found` si une icÃ´ne est manquante. Ã‡a ne bloque pas le chargement, mais gÃ©nÃ¨re des floods de logs.
+Le jeu logue `Sprite at path X couldn't be found` si une icône est manquante. Ça ne bloque pas le chargement, mais génère des floods de logs.
 
-**IcÃ´nes vanilla sÃ»res pour les enhancements et buildings :**
+**Icônes vanilla sûres pour les enhancements et buildings :**
 ```
 BuildIcons/Icon_Hyperloop
 BuildIcons/Icon_Port
 BuildIcons/Icon_MaintenanceFacility
-BuildIcons/Icon_StorageWarehouse_1   # vÃ©rifier l'existence exacte
+BuildIcons/Icon_StorageWarehouse_1   # vérifier l'existence exacte
 BuildIcons/Icon_DroneFactory_1
-ICO_BuildingLimit                     # icÃ´ne enhancement standard
+ICO_BuildingLimit                     # icône enhancement standard
 ```
 
-**Chemins custom (dans dossier Sprite/ du mod) :** fonctionnent si le fichier existe dans le dossier du mod. VÃ©rifier avant d'utiliser : `Sprite/ICO_routing_hop.png` existait dans les sources MkAspera mais **pas** dans StreamingAssets â†’ crash sprites.
+**Chemins custom (dans dossier Sprite/ du mod) :** fonctionnent si le fichier existe dans le dossier du mod. Vérifier avant d'utiliser : `Sprite/ICO_routing_hop.png` existait dans les sources MkAspera mais **pas** dans StreamingAssets → crash sprites.
 
-### `!replace` â€” Multiple champs sur mÃªme entrÃ©e
+### `!replace` — Multiple champs sur même entrée
 
 ```yaml
-# âœ… VALIDÃ‰ â€” multiple !replace sur la mÃªme entrÃ©e de bÃ¢timent
+# ✅ VALIDÉ — multiple !replace sur la même entrée de bâtiment
 building_drone_factory:
   !replace categoryType: !buildingCategory category_ai
   !replace droneCapacity: 3
 ```
 
-> **R003 â€” CRITIQUE** : `!replace outputResource: !resource <resource_mod>` sur un bÃ¢timent vanilla
-> â†’ crash `ArgumentOutOfRangeException`. Les tables BuildPanel sont indexÃ©es sur les resources vanilla.
-> **Solution** : crÃ©er un nouveau bÃ¢timent dÃ©diÃ© au lieu de patcher l'outputResource du vanilla.
+> **R003 — CRITIQUE** : `!replace outputResource: !resource <resource_mod>` sur un bâtiment vanilla
+> → crash `ArgumentOutOfRangeException`. Les tables BuildPanel sont indexées sur les resources vanilla.
+> **Solution** : créer un nouveau bâtiment dédié au lieu de patcher l'outputResource du vanilla.
 
 ---
 
 ---
 
-## manifest.yaml â€” Mod entry point
+## manifest.yaml — Mod entry point
 
 ```yaml
 modId: "MyUniqueMod"
@@ -362,44 +362,44 @@ knowledge:
 
 ---
 
-## sdk.yaml â€” Attributs SDK (extensions hors datamodel natif)
+## sdk.yaml — Attributs SDK (extensions hors datamodel natif)
 
 > Fichier sidecar lu uniquement par le SDK Per Aspera (jamais par le jeu natif).
-> PlacÃ© dans `Mods/MonMod/sdk.yaml` Ã  cÃ´tÃ© du `manifest.yaml`.
+> Placé dans `Mods/MonMod/sdk.yaml` à côté du `manifest.yaml`.
 
 ```yaml
 sdkExtensionVersion: 1
 
 extensions:
-  multiOutput:                     # sorties secondaires pour bÃ¢timents Factory
+  multiOutput:                     # sorties secondaires pour bâtiments Factory
     building_ma_raffinerie:
       extraOutputs:
         - resource: resource_slag
           quantity: 2
-          scaleWithProductivity: true   # suit Factory.Productivity (dÃ©faut true)
+          scaleWithProductivity: true   # suit Factory.Productivity (défaut true)
         - resource: resource_heat
           quantity: 1
           scaleWithProductivity: false
 ```
 
 ### Sections disponibles (2026-06)
-| Section | Usage | ValidÃ© |
+| Section | Usage | Validé |
 |---------|-------|--------|
-| `multiOutput` | Sorties secondaires pour `Factory` | âœ… En jeu 2026-06-12 |
+| `multiOutput` | Sorties secondaires pour `Factory` | ✅ En jeu 2026-06-12 |
 
-### RÃ¨gles sdk.yaml
-- `scaleWithProductivity: true` â†’ quantitÃ© rÃ©elle = `quantity Ã— Factory.Productivity`
-- Les clÃ©s doivent exister dans les tables natives (`BuildingType.table`, `ResourceType.table`) â€” sinon ERROR loggÃ© et entrÃ©e ignorÃ©e
-- Plusieurs mods peuvent dÃ©clarer `multiOutput` : dernier chargÃ© gagne sur un mÃªme `buildingKey`
-- âš ï¸ Ne pas utiliser `displayOutputs` YAML pour les sorties secondaires â€” cosmÃ©tique uniquement, superpose les icÃ´nes
+### Règles sdk.yaml
+- `scaleWithProductivity: true` → quantité réelle = `quantity × Factory.Productivity`
+- Les clés doivent exister dans les tables natives (`BuildingType.table`, `ResourceType.table`) — sinon ERROR loggé et entrée ignorée
+- Plusieurs mods peuvent déclarer `multiOutput` : dernier chargé gagne sur un même `buildingKey`
+- ⚠️ Ne pas utiliser `displayOutputs` YAML pour les sorties secondaires — cosmétique uniquement, superpose les icônes
 
-### API C# Ã©quivalente (mods sans sdk.yaml)
+### API C# équivalente (mods sans sdk.yaml)
 ```csharp
-// DÃ©clarer dans Awake/Load â€” rÃ©solution diffÃ©rÃ©e aprÃ¨s CompleteLoading
+// Déclarer dans Awake/Load — résolution différée après CompleteLoading
 MultiOutput.RegisterExtraOutput("building_ma_raffinerie", "resource_slag", 2f);
 MultiOutput.RegisterExtraOutput("building_ma_raffinerie", "resource_heat", 1f, scaleWithProductivity: false);
 MultiOutput.OnSecondaryOutputProduced += args =>
-    Log.LogInfo($"{args.BuildingKey} â†’ +{args.Quantity} {args.ResourceKey}");
+    Log.LogInfo($"{args.BuildingKey} → +{args.Quantity} {args.ResourceKey}");
 ```
 
 ---
@@ -442,7 +442,7 @@ building_my_water_mine:
 | `description` | string | Localization key or plain text |
 | `maxHealth` | float | HP. Higher = more durable |
 | `healthLossPerDay` | float | Daily degradation (0 = no decay) |
-| `prefabName` | string | Unity 3D prefab â€” must exist in game assets |
+| `prefabName` | string | Unity 3D prefab — must exist in game assets |
 | `iconName` | string | Sprite path e.g. `BuildIcons/Icon_WaterPlant_1` |
 | `outputResource` | `!resource` | What this building produces |
 | `outputQuantity` | int | Units per production cycle |
@@ -458,7 +458,7 @@ building_my_water_mine:
 | `requiredResourceVein` | `!resource` | Vein type needed at placement |
 | `knowledge` | `!knowledge` | Unlock requirement |
 | `isUpgradeTo` | `!building[]` | Predecessor buildings |
-| `extractionLevel` | int | Tier: 1, 2, 3â€¦ |
+| `extractionLevel` | int | Tier: 1, 2, 3… |
 | `reservedRadius` | float | Clear zone around building |
 
 ### Energy properties
@@ -477,11 +477,11 @@ building_my_water_mine:
 
 ## resource.yaml
 
-> **R001 â€” CRITIQUE** : toute resource dÃ©finie dans un mod **doit** avoir `materialType: Placeholder`.
-> `Mined`/`Manufactured` dÃ©clenche la gÃ©nÃ©ration de scatter/veines â†’ `ArgumentOutOfRangeException` au chargement.
+> **R001 — CRITIQUE** : toute resource définie dans un mod **doit** avoir `materialType: Placeholder`.
+> `Mined`/`Manufactured` déclenche la génération de scatter/veines → `ArgumentOutOfRangeException` au chargement.
 
 ```yaml
-# âœ… CORRECT â€” resource custom (mod-defined)
+# ✅ CORRECT — resource custom (mod-defined)
 resource_my_metal:
   name: "My Rare Metal"
   # index omis = le jeu assigne automatiquement
@@ -498,11 +498,11 @@ resource_my_metal:
 
 | Value | Description | Mods custom |
 |-------|-------------|-------------|
-| `Mined` | Extrait de gisements â€” gÃ©nÃ¨re des veines sur la carte | **INTERDIT** pour resources mod |
-| `Manufactured` | Produit par des usines â€” gÃ©nÃ¨re des scatter | **INTERDIT** pour resources mod |
-| `Released` | Sous-produit atmosphÃ©rique (ex : drones volants) | Uniquement avec prefabs Released |
+| `Mined` | Extrait de gisements — génère des veines sur la carte | **INTERDIT** pour resources mod |
+| `Manufactured` | Produit par des usines — génère des scatter | **INTERDIT** pour resources mod |
+| `Released` | Sous-produit atmosphérique (ex : drones volants) | Uniquement avec prefabs Released |
 | `Placement` | Objets de placement | Usage rare |
-| `Placeholder` | DÃ©sactive toute gÃ©nÃ©ration terrain | **OBLIGATOIRE** pour resources mod |
+| `Placeholder` | Désactive toute génération terrain | **OBLIGATOIRE** pour resources mod |
 
 ---
 
@@ -542,9 +542,9 @@ knowledge:
     iconName: "icon_knowledge_iron"
     contentTable:
       - field: "Density"
-        text: "9.2 g/cmÂ³"
+        text: "9.2 g/cm³"
       - field: "Melting Point"
-        text: "1,800Â°C"
+        text: "1,800°C"
 ```
 
 ---
@@ -592,7 +592,7 @@ buildingCategory:
 
 ---
 
-## `!replace` â€” Patch modifier
+## `!replace` — Patch modifier
 
 Prefix any field with `!replace` to overwrite only that field on an existing entry, without copying the full object:
 
@@ -649,7 +649,7 @@ random_event_my_event:
 
 ---
 
-## rule.yaml â€” Event-triggered rules
+## rule.yaml — Event-triggered rules
 
 ```yaml
 rule_my_rule:
@@ -721,7 +721,7 @@ my_quest:
 
 ---
 
-## project.yaml â€” Special Projects
+## project.yaml — Special Projects
 
 ```yaml
 project_my_launch:
@@ -795,7 +795,7 @@ hazard_my_meteor:
 
 ---
 
-## scatter.yaml â€” Resource vein placement
+## scatter.yaml — Resource vein placement
 
 ```yaml
 passes:
@@ -820,7 +820,7 @@ passes:
 
 ---
 
-## PlanetSetup.yaml â€” Planet simulation parameters
+## PlanetSetup.yaml — Planet simulation parameters
 
 Flat key-value pairs, no nesting. Controls the climate simulation constants:
 
@@ -849,7 +849,7 @@ Set to `0.0000000000001` to effectively disable a delta (useful when ClimatAsper
 ## language.yaml / localization
 
 ```yaml
-# language.yaml â€” declares localization CSV files
+# language.yaml — declares localization CSV files
 base:
   systemLanguage: English
   files:
@@ -866,7 +866,7 @@ MY_BUILDING_DESC,"Extracts rare minerals from the deep crust."
 
 ---
 
-## initialSetup.yaml â€” Starting conditions
+## initialSetup.yaml — Starting conditions
 
 ```yaml
 clearAreaRadius: 50

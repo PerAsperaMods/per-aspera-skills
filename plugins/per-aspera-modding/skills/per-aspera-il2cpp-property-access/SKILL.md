@@ -7,7 +7,7 @@ description: >
 license: MIT
 ---
 
-# IL2CPP Property Access Patterns â€” Per Aspera
+# IL2CPP Property Access Patterns — Per Aspera
 
 ## Problem
 
@@ -19,16 +19,16 @@ Standard .NET reflection on IL2CPP objects is **fragile**:
 
 ## Solution: Multi-Strategy Property Reader
 
-The SDK provides `IL2CppPropertyReader` â€” a robust helper that tries multiple access strategies automatically:
+The SDK provides `IL2CppPropertyReader` — a robust helper that tries multiple access strategies automatically:
 
 ```csharp
 using PerAspera.Core.IL2CPP;
 
-// âœ… Simple: reads property using best available strategy
+// ✅ Simple: reads property using best available strategy
 var name = IL2CppPropertyReader.ReadProperty<string>(myGameObject, "name");
 var lat = IL2CppPropertyReader.ReadProperty<float>(myPOI, "centerLatitude");
 
-// âœ… With null safety
+// ✅ With null safety
 var moreInfoUrl = IL2CppPropertyReader.ReadProperty<string>(myPOI, "moreInfoUrl") ?? "N/A";
 ```
 
@@ -47,7 +47,7 @@ The reader tries these strategies **in order** until one succeeds:
 | 5 | **Backing Field** | `_name`, `_Name`, `<name>k__BackingField` | Auto-property backing fields |
 | 6 | **Indexer** | `obj["key"]` | Dictionary-like collections |
 
-Once a strategy works, **it's cached** â€” future reads of the same property use the proven strategy.
+Once a strategy works, **it's cached** — future reads of the same property use the proven strategy.
 
 ---
 
@@ -121,7 +121,7 @@ else
 
 ## Comparison: Before vs After
 
-### âŒ OLD WAY (Unreliable)
+### ❌ OLD WAY (Unreliable)
 
 ```csharp
 // Tries only public property, fails silently or throws
@@ -129,7 +129,7 @@ try
 {
     var prop = type.GetProperty("poi", BindingFlags.Public | Instance);
     if (prop != null)
-        var poi = prop.GetValue(visualPoi);  // â† Can throw IL2CPP error
+        var poi = prop.GetValue(visualPoi);  // ← Can throw IL2CPP error
 }
 catch (Exception ex)
 {
@@ -137,7 +137,7 @@ catch (Exception ex)
 }
 ```
 
-### âœ… NEW WAY (Robust)
+### ✅ NEW WAY (Robust)
 
 ```csharp
 // Tries 6 strategies automatically, caches results
@@ -153,13 +153,13 @@ if (poi != null)
 
 ## When to Use
 
-âœ… **Use `IL2CppPropertyReader` when:**
+✅ **Use `IL2CppPropertyReader` when:**
 - Reading properties from game objects (BaseGame, Universe, Buildings, POI, etc.)
 - Property access is throwing IL2CPP reflection errors
 - Property may be public, private, or a backing field
 - You want to handle missing properties gracefully
 
-âŒ **Don't use when:**
+❌ **Don't use when:**
 - You already know the exact property type and location
 - Performance is critical (caching helps, but still slower than direct access)
 - You're in a hot loop (cache lookups instead)
@@ -217,13 +217,13 @@ var name = PointOfInterestWrapper.GetPOIProperty<string>(poi, "name");
 ## Troubleshooting
 
 ### "ReadProperty returns null but property exists"
-â†’ Property might be null at runtime, not a reflection issue. Check logs for which strategy succeeded.
+→ Property might be null at runtime, not a reflection issue. Check logs for which strategy succeeded.
 
 ### "Strategy cache shows wrong strategy being used"
-â†’ Call `IL2CppPropertyReader.ClearCache()` to reset and re-detect strategies.
+→ Call `IL2CppPropertyReader.ClearCache()` to reset and re-detect strategies.
 
 ### "Still getting IL2CPP errors"
-â†’ The property truly doesn't exist on that type. Check:
+→ The property truly doesn't exist on that type. Check:
 1. Object type is correct (log `obj.GetType().Name`)
 2. Property name is correct (case-sensitive in game code, but reader is case-insensitive)
 3. Object is valid (check `obj != null && obj.Pointer != IntPtr.Zero`)
@@ -232,7 +232,7 @@ var name = PointOfInterestWrapper.GetPOIProperty<string>(poi, "name");
 
 ## See Also
 
-- `/per-aspera-il2cpp-gotchas` â€” Common IL2CPP pitfalls and fixes
-- `IL2CppExtensions.cs` â€” Other IL2CPP extension methods
-- `PointOfInterestWrapper.cs` â€” Real example using this pattern
-- `Game-Lifecycle-And-Data-Loading.md` â€” When to access game data
+- `/per-aspera-il2cpp-gotchas` — Common IL2CPP pitfalls and fixes
+- `IL2CppExtensions.cs` — Other IL2CPP extension methods
+- `PointOfInterestWrapper.cs` — Real example using this pattern
+- `Game-Lifecycle-And-Data-Loading.md` — When to access game data

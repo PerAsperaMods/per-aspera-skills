@@ -9,23 +9,23 @@ license: MIT
 ---
 
 
-# IL2CPP Gotchas â€” Per Aspera Modding
+# IL2CPP Gotchas — Per Aspera Modding
 
 ## The #1 Rule
 
-**If it compiles but crashes at runtime â†’ check this file first.**
+**If it compiles but crashes at runtime → check this file first.**
 
 IL2CPP transforms C# into native code before shipping. Some standard C# patterns silently break. Every gotcha here is something that *looks* valid but fails in the game.
 
 ---
 
-## Gotcha 1: `Type` vs `System.Type` â€” Assembly Conflict
+## Gotcha 1: `Type` vs `System.Type` — Assembly Conflict
 
 **Error**: `CS0104: 'Type' is an ambiguous reference between 'System.Type' and 'Il2Cpp...Type'`
 
-**Why**: BepInX IL2CPP loads two assemblies with a `Type` class â€” `PluginsAssembly` (your code) and `ScriptsAssembly` (game code). Bare `Type` is ambiguous.
+**Why**: BepInX IL2CPP loads two assemblies with a `Type` class — `PluginsAssembly` (your code) and `ScriptsAssembly` (game code). Bare `Type` is ambiguous.
 
-**âœ… SOLVED AT BUILD LEVEL (2026-06)**: this workspace declares a global using alias in
+**✅ SOLVED AT BUILD LEVEL (2026-06)**: this workspace declares a global using alias in
 `Directory.Build.props` (root and SDK):
 
 ```xml
@@ -34,16 +34,16 @@ IL2CPP transforms C# into native code before shipping. Some standard C# patterns
 </ItemGroup>
 ```
 
-Bare `Type` now compiles and always means `System.Type` â€” no manual discipline needed.
+Bare `Type` now compiles and always means `System.Type` — no manual discipline needed.
 Writing `System.Type` explicitly remains fine.
 
 ```csharp
-// âœ… Both are correct in this workspace
+// ✅ Both are correct in this workspace
 private static Type? _buildingType;          // resolves to System.Type via alias
-private static System.Type? _cargoType;     // explicit â€” also fine
+private static System.Type? _cargoType;     // explicit — also fine
 ```
 
-**If you hit CS0104 on another short name** (`Console`, `Random`, `Debug`â€¦): add a
+**If you hit CS0104 on another short name** (`Console`, `Random`, `Debug`…): add a
 `<Using Alias>` for it in `Directory.Build.props` instead of qualifying everywhere.
 
 **Outside this workspace** (a mod repo without the alias): fully qualify `System.Type`
@@ -58,19 +58,19 @@ or copy the alias ItemGroup into the project.
 **Why**: IL2CPP objects can be "alive" (non-null) but pointing to a GC-collected or destroyed native object. Standard `null` check doesn't catch this.
 
 ```csharp
-// âŒ WRONG â€” native object could be destroyed
+// ❌ WRONG — native object could be destroyed
 if (building != null)
     building.DoSomething();
 
-// âœ… CORRECT â€” full IL2CPP null safety check
+// ✅ CORRECT — full IL2CPP null safety check
 if (building != null && building.Pointer != IntPtr.Zero && !building.WasCollected)
     building.DoSomething();
 
-// âœ… SDK shortcut â€” use IsValid() wrapper (preferred)
+// ✅ SDK shortcut — use IsValid() wrapper (preferred)
 if (building.IsValid())
     building.DoSomething();
 
-// âœ… For game wrappers â€” use SDK null guard pattern
+// ✅ For game wrappers — use SDK null guard pattern
 var planet = GameApi.wrapper.planet;
 if (planet == null) return;    // SDK already handles Pointer/WasCollected internally
 ```
@@ -84,16 +84,16 @@ if (planet == null) return;    // SDK already handles Pointer/WasCollected inter
 **Why**: IL2CPP uses its own string type internally. When crossing the boundary you must explicitly convert.
 
 ```csharp
-// âŒ WRONG â€” may return wrong value or throw
+// ❌ WRONG — may return wrong value or throw
 string name = il2cppObj.SomeStringField;
 
-// âœ… CORRECT â€” explicit conversion from IL2CPP string
+// ✅ CORRECT — explicit conversion from IL2CPP string
 string name = il2cppObj.SomeStringField.ToCSharp();
 
-// âœ… Going the other way (passing C# string to IL2CPP)
+// ✅ Going the other way (passing C# string to IL2CPP)
 il2cppObj.SetName(myString.ToIl2Cpp());
 
-// âœ… Check before converting (can be null at IL2CPP level)
+// ✅ Check before converting (can be null at IL2CPP level)
 string? name = il2cppObj.SomeStringField?.ToCSharp();
 ```
 
@@ -106,21 +106,21 @@ string? name = il2cppObj.SomeStringField?.ToCSharp();
 **Why**: IL2CPP collections (`Il2CppReferenceArray<T>`, `Il2CppSystem.Collections.Generic.List<T>`) are NOT interchangeable with `System.Collections.Generic`.
 
 ```csharp
-// âŒ WRONG â€” directly iterating an IL2CPP array as IEnumerable<T>
+// ❌ WRONG — directly iterating an IL2CPP array as IEnumerable<T>
 foreach (var b in planet.Buildings)   // May not work or crash
 
-// âœ… CORRECT â€” convert to C# array first
+// ✅ CORRECT — convert to C# array first
 var buildings = planet.Buildings.ToCSharpArray();
 foreach (var b in buildings)
     ProcessBuilding(b);
 
-// âœ… IL2CppList â†’ C# List
+// ✅ IL2CppList → C# List
 var list = il2cppList.ToList();
 
-// âœ… C# List â†’ IL2CPP List (when passing to game API)
+// ✅ C# List → IL2CPP List (when passing to game API)
 var il2cppList = myList.ToIl2CppList();
 
-// âœ… Single item safety
+// ✅ Single item safety
 var item = il2cppArray[0];   // Make sure Length > 0 first
 ```
 
@@ -133,10 +133,10 @@ var item = il2cppArray[0];   // Make sure Length > 0 first
 **Error**: `TypeLoadException: Could not load type 'BaseUnityPlugin'` at game start
 
 ```csharp
-// âŒ WRONG â€” BaseUnityPlugin is for standard Unity (Mono), not IL2CPP
+// ❌ WRONG — BaseUnityPlugin is for standard Unity (Mono), not IL2CPP
 public class MyPlugin : BaseUnityPlugin { }
 
-// âœ… CORRECT â€” always use BasePlugin for IL2CPP
+// ✅ CORRECT — always use BasePlugin for IL2CPP
 using BepInEx.Unity.IL2CPP;
 public class MyPlugin : BasePlugin
 {
@@ -153,14 +153,14 @@ public class MyPlugin : BasePlugin
 **Why**: At `Load()` time, the game scene hasn't loaded yet. Game objects don't exist.
 
 ```csharp
-// âŒ WRONG â€” game not loaded yet
+// ❌ WRONG — game not loaded yet
 public override void Load()
 {
-    var planet = GameApi.wrapper.planet;   // null â€” game not started
+    var planet = GameApi.wrapper.planet;   // null — game not started
     LogAspera.Info(planet.Name);           // NullReferenceException!
 }
 
-// âœ… CORRECT â€” wait for game to be fully loaded
+// ✅ CORRECT — wait for game to be fully loaded
 public override void Load()
 {
     LogAspera.Initialize(Log, MyPluginInfo.PLUGIN_NAME);
@@ -169,7 +169,7 @@ public override void Load()
 
 private void OnGameReady(GameFullyLoadedEvent evt)
 {
-    var planet = GameApi.wrapper.planet;   // âœ… Now available
+    var planet = GameApi.wrapper.planet;   // ✅ Now available
     LogAspera.Info(planet?.Name ?? "No planet");
 }
 ```
@@ -183,23 +183,23 @@ private void OnGameReady(GameFullyLoadedEvent evt)
 **Why**: Custom MonoBehaviours must be registered with IL2CPP's type system before use.
 
 ```csharp
-// âŒ WRONG â€” MonoBehaviour not registered for IL2CPP
+// ❌ WRONG — MonoBehaviour not registered for IL2CPP
 public class MyComponent : MonoBehaviour { }
 
-// âœ… CORRECT â€” register + required IntPtr constructor
+// ✅ CORRECT — register + required IntPtr constructor
 using Il2CppInterop.Runtime.Injection;
 
 [RegisterInIl2Cpp]
 public class MyComponent : MonoBehaviour
 {
-    // âœ… Required constructor for IL2CPP
+    // ✅ Required constructor for IL2CPP
     public MyComponent(System.IntPtr ptr) : base(ptr) { }
 
     private void Awake() { }
     private void Update() { }
 }
 
-// Usage â€” must use AddComponent after registration
+// Usage — must use AddComponent after registration
 ClassInjector.RegisterTypeInIl2Cpp<MyComponent>();
 gameObject.AddComponent<MyComponent>();
 ```
@@ -211,13 +211,13 @@ gameObject.AddComponent<MyComponent>();
 **Error**: `MissingMethodException` when calling standard .NET methods on game objects
 
 ```csharp
-// âŒ WRONG â€” game expects Il2CppSystem.Object, you pass System.Object
+// ❌ WRONG — game expects Il2CppSystem.Object, you pass System.Object
 someIl2CppMethod.Invoke(gameObject, new System.Object[] { param });
 
-// âœ… CORRECT â€” use Il2CppSystem.Object array
+// ✅ CORRECT — use Il2CppSystem.Object array
 someIl2CppMethod.Invoke(gameObject, new Il2CppSystem.Object[] { param });
 
-// âœ… For reflection across IL2CPP boundary
+// ✅ For reflection across IL2CPP boundary
 var method = typeof(TargetClass).GetMethod("MethodName",
     System.Reflection.BindingFlags.Instance |
     System.Reflection.BindingFlags.Public);
@@ -230,15 +230,15 @@ var method = typeof(TargetClass).GetMethod("MethodName",
 **Error**: Harmony patch doesn't skip original, or `InvalidProgramException`
 
 ```csharp
-// âŒ WRONG â€” void prefix can't control execution flow
+// ❌ WRONG — void prefix can't control execution flow
 [HarmonyPrefix]
 static void MyPrefix(ref int someField)
 {
     someField = 42;
-    return false;   // CS0127 error â€” can't return from void
+    return false;   // CS0127 error — can't return from void
 }
 
-// âœ… CORRECT â€” bool prefix: return false to skip original
+// ✅ CORRECT — bool prefix: return false to skip original
 [HarmonyPrefix]
 static bool MyPrefix(ref int someField)
 {
@@ -246,7 +246,7 @@ static bool MyPrefix(ref int someField)
     return false;   // Skips the original method
 }
 
-// âœ… CORRECT â€” return true to let original run after
+// ✅ CORRECT — return true to let original run after
 [HarmonyPrefix]
 static bool MyPrefix(SomeClass __instance)
 {
@@ -265,10 +265,10 @@ static bool MyPrefix(SomeClass __instance)
 **Why**: Unity objects (GameObject, Component) can be destroyed at any time (scene change, game state change). Caching them across frames is risky.
 
 ```csharp
-// âŒ RISKY â€” cached at mod load, may be null later
+// ❌ RISKY — cached at mod load, may be null later
 private static GameObject? _cachedPanel;
 
-// âœ… SAFE â€” check every access
+// ✅ SAFE — check every access
 private static GameObject? _cachedPanel;
 
 private void UsePanel()
@@ -284,54 +284,54 @@ private void UsePanel()
 
 ---
 
-## Gotcha 11: MonoBehaviour `internal` â†’ silencieusement ignorÃ©
+## Gotcha 11: MonoBehaviour `internal` → silencieusement ignoré
 
-**Erreur**: Aucun message d'erreur, mais `AddComponent<T>()` ne fait rien. Les `Log.Info(...)` aprÃ¨s la ligne sont atteints, mais le composant ne s'exÃ©cute jamais.
+**Erreur**: Aucun message d'erreur, mais `AddComponent<T>()` ne fait rien. Les `Log.Info(...)` après la ligne sont atteints, mais le composant ne s'exécute jamais.
 
-**Pourquoi**: Il2CppInterop n'enregistre automatiquement que les types `public`. Un type `internal` est ignorÃ© silencieusement â€” pas d'exception, pas de log d'erreur. Pire : les lignes de code suivantes dans `Load()` (ex: patches Harmony) peuvent aussi Ãªtre bloquÃ©es si `AddComponent` est dans un `try` et l'exception est avalÃ©e.
+**Pourquoi**: Il2CppInterop n'enregistre automatiquement que les types `public`. Un type `internal` est ignoré silencieusement — pas d'exception, pas de log d'erreur. Pire : les lignes de code suivantes dans `Load()` (ex: patches Harmony) peuvent aussi être bloquées si `AddComponent` est dans un `try` et l'exception est avalée.
 
 ```csharp
-// âŒ WRONG â€” internal type, jamais enregistrÃ© dans le domaine IL2CPP
+// ❌ WRONG — internal type, jamais enregistré dans le domaine IL2CPP
 internal class MyComponent : MonoBehaviour
 {
     private void Update() { }
 }
-AddComponent<MyComponent>(); // silencieusement ignorÃ©
+AddComponent<MyComponent>(); // silencieusement ignoré
 
-// âœ… CORRECT â€” public obligatoire
+// ✅ CORRECT — public obligatoire
 public class MyComponent : MonoBehaviour
 {
     private void Update() { }
 }
 ```
 
-**VÃ©rification** : dans les logs BepInEx, `Il2CppInterop` log doit afficher `Registered mono type MyNamespace.MyComponent in il2cpp domain` au dÃ©marrage. Si cette ligne est absente â†’ le type n'est pas `public`.
+**Vérification** : dans les logs BepInEx, `Il2CppInterop` log doit afficher `Registered mono type MyNamespace.MyComponent in il2cpp domain` au démarrage. Si cette ligne est absente → le type n'est pas `public`.
 
 ---
 
-## Gotcha 12: `ref bool __result` en Postfix â†’ IL Compile Error
+## Gotcha 12: `ref bool __result` en Postfix → IL Compile Error
 
 **Erreur**: `HarmonyLib.HarmonyException: IL Compile Error (unknown location)`
 
-**Pourquoi**: Sur les mÃ©thodes IL2CPP natives, HarmonyX ne peut pas gÃ©nÃ©rer le code IL nÃ©cessaire pour un `ref` en Postfix. L'erreur est encore pire quand un autre Postfix sur la mÃªme mÃ©thode utilise `bool __result` (sans ref) â€” la chaÃ®ne mixte ref/non-ref est impossible Ã  compiler.
+**Pourquoi**: Sur les méthodes IL2CPP natives, HarmonyX ne peut pas générer le code IL nécessaire pour un `ref` en Postfix. L'erreur est encore pire quand un autre Postfix sur la même méthode utilise `bool __result` (sans ref) — la chaîne mixte ref/non-ref est impossible à compiler.
 
 ```csharp
-// âŒ WRONG â€” ref bool __result dans Postfix = IL Compile Error en IL2CPP
+// ❌ WRONG — ref bool __result dans Postfix = IL Compile Error en IL2CPP
 [HarmonyPostfix]
 public static void Postfix(ref bool __result) { __result = true; }
 
-// âŒ WRONG AUSSI â€” Prefix vide avec ref bool __result
+// ❌ WRONG AUSSI — Prefix vide avec ref bool __result
 [HarmonyPrefix]
 public static void Prefix(ref bool __result) { /* corps vide */ }
 
-// âœ… Option 1 : Passthrough Postfix (retourne le type cible)
+// ✅ Option 1 : Passthrough Postfix (retourne le type cible)
 [HarmonyPostfix]
 public static bool Postfix(bool __result, Building dest)
 {
     return ShouldOverride(dest) ? true : __result;
 }
 
-// âœ… Option 2 : Prefix qui court-circuite (return false = skip original)
+// ✅ Option 2 : Prefix qui court-circuite (return false = skip original)
 [HarmonyPrefix]
 public static bool Prefix(Building dest, ref bool __result)
 {
@@ -347,7 +347,7 @@ public static bool Prefix(Building dest, ref bool __result)
 
 | Error Message | Likely Cause | Fix |
 |---|---|---|
-| `CS0104 'Type' is ambiguous` | Projet sans l'alias global | Alias `<Using Include="System.Type" Alias="Type"/>` (dÃ©jÃ  actif dans ce workspace) |
+| `CS0104 'Type' is ambiguous` | Projet sans l'alias global | Alias `<Using Include="System.Type" Alias="Type"/>` (déjà actif dans ce workspace) |
 | `NullReferenceException` in `Load()` | Game not loaded | Wrap in `SubscribeToGameFullyLoaded` |
 | `NullReferenceException` on valid-looking object | `WasCollected` | Check `.Pointer != IntPtr.Zero && !WasCollected` |
 | `TypeLoadException: BaseUnityPlugin` | Wrong base class | Change to `BasePlugin` |
@@ -356,9 +356,9 @@ public static bool Prefix(Building dest, ref bool __result)
 | Empty collection when data exists | Didn't convert | Call `.ToCSharpArray()` first |
 | Harmony prefix not skipping | Void prefix | Return `bool` from prefix |
 | `HarmonyException: IL Compile Error` | `ref bool __result` en Postfix IL2CPP | Utiliser Passthrough Postfix ou Prefix |
-| `IL Compile Error` aprÃ¨s 2Ã¨me patch | Chain ref/non-ref sur mÃªme mÃ©thode | HomogÃ©nÃ©iser ou utiliser Prefix |
-| `Parameter "dest" not found` | Nom de param patch â‰  nom IL2CPP | Utiliser le nom exact de la mÃ©thode IL2CPP |
-| `AddComponent` silencieusement ignorÃ© | MonoBehaviour `internal` | Changer en `public` |
+| `IL Compile Error` après 2ème patch | Chain ref/non-ref sur même méthode | Homogénéiser ou utiliser Prefix |
+| `Parameter "dest" not found` | Nom de param patch ≠ nom IL2CPP | Utiliser le nom exact de la méthode IL2CPP |
+| `AddComponent` silencieusement ignoré | MonoBehaviour `internal` | Changer en `public` |
 | Component not found | Not registered | Add `[RegisterInIl2Cpp]` + IntPtr ctor |
 | Wrong string value | No ToCSharp call | Use `.ToCSharp()` on IL2CPP strings |
 
@@ -366,5 +366,5 @@ public static bool Prefix(Building dest, ref bool __result)
 
 ## Reference Files
 
-- `Internal_doc\ARCHITECTURE\VALIDATED-PATTERNS.md` â€” Verified working patterns
-- `docs\Capabilities-Matrix.md` â€” SDK vs vanilla capabilities (2026-06)
+- `Internal_doc\ARCHITECTURE\VALIDATED-PATTERNS.md` — Verified working patterns
+- `docs\Capabilities-Matrix.md` — SDK vs vanilla capabilities (2026-06)

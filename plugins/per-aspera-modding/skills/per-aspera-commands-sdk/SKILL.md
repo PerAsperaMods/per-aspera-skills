@@ -9,11 +9,11 @@ license: MIT
 ---
 
 
-# Per Aspera SDK â€” Commands Reference
+# Per Aspera SDK — Commands Reference
 
 ## Initialization (pattern obligatoire)
 
-`Commands.Initialize(evt)` doit Ãªtre appelÃ© dans `SubscribeToGameCommandsReady` avant toute exÃ©cution de commandes natives ou YAML.
+`Commands.Initialize(evt)` doit être appelé dans `SubscribeToGameCommandsReady` avant toute exécution de commandes natives ou YAML.
 
 ```csharp
 using PerAspera.GameAPI.Commands;
@@ -31,13 +31,13 @@ public override void Load()
         return true;
     });
 
-    // Initialize APRÃˆS que le jeu est prÃªt (InteractionManager disponible)
+    // Initialize APRÈS que le jeu est prêt (InteractionManager disponible)
     EnhancedEventBus.SubscribeToGameCommandsReady(evt => {
-        Commands.Initialize(evt);     // â† OBLIGATOIRE avant ExecuteFromYaml/File
-        Commands.OnCommandExecuted(e => LogAspera.Info($"âœ… {e.CommandType}"));
-        Commands.OnCommandFailed(e   => LogAspera.Warning($"âŒ {e.Error}"));
+        Commands.Initialize(evt);     // ← OBLIGATOIRE avant ExecuteFromYaml/File
+        Commands.OnCommandExecuted(e => LogAspera.Info($"✅ {e.CommandType}"));
+        Commands.OnCommandFailed(e   => LogAspera.Warning($"❌ {e.Error}"));
 
-        // ExÃ©cuter des commandes YAML au dÃ©marrage
+        // Exécuter des commandes YAML au démarrage
         string modPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
         Commands.ExecuteFromYamlFile(Path.Combine(modPath, "startup-actions.yaml"));
     });
@@ -49,7 +49,7 @@ public override void Load()
 ## YAML Commands (ExecuteFromYaml / ExecuteFromYamlFile)
 
 ```csharp
-// ExÃ©cuter un YAML inline (commandes console + SDK natives)
+// Exécuter un YAML inline (commandes console + SDK natives)
 int count = Commands.ExecuteFromYaml(@"
 actions:
   - command: FinishConstructions
@@ -62,7 +62,7 @@ actions:
     showInFrontend: false
 ");
 
-// ExÃ©cuter un fichier YAML
+// Exécuter un fichier YAML
 int count = Commands.ExecuteFromYamlFile(Path.Combine(modPath, "startup-actions.yaml"));
 ```
 
@@ -74,7 +74,7 @@ Commands.RegisterHandler("ActivateSpaceport", (cmd, args) =>
 {
     string faction = args.Length > 0 ? args[0] : "player";
     Log.LogInfo($"Spaceport activated for {faction}!");
-    return true; // true = succÃ¨s
+    return true; // true = succès
 });
 
 // Dans YAML :
@@ -90,7 +90,7 @@ Commands.UnregisterHandler("ActivateSpaceport");
 ## Custom TextActions (enhancements.yaml)
 
 ```csharp
-// ImplÃ©mentation
+// Implémentation
 public class GiveWaterAction : IModTextAction
 {
     public string Name => "GiveWater";
@@ -182,9 +182,9 @@ var playerFaction = GetPlayerFaction();
 var result = Commands.ImportResource(playerFaction, ResourceType.Water, 1000);
 
 if (result.Success)
-    Log.LogInfo($"âœ… Water imported in {result.ExecutionTimeMs}ms");
+    Log.LogInfo($"✅ Water imported in {result.ExecutionTimeMs}ms");
 else
-    Log.LogError($"âŒ {result.Error}");
+    Log.LogError($"❌ {result.Error}");
 ```
 
 ### Builder pattern (complex commands)
@@ -222,30 +222,30 @@ Commands.OnCommandExecuted(evt =>
 
 // Subscribe to failures only
 Commands.OnCommandFailed(evt =>
-    Log.LogError($"FAILED: {evt.CommandType} â€” {evt.Error}"));
+    Log.LogError($"FAILED: {evt.CommandType} — {evt.Error}"));
 ```
 
 ---
 
-## API de vÃ©rification
+## API de vérification
 
 ```csharp
-bool supported = Commands.IsCommandTypeSupported("ImportResource"); // âœ… correct
-string[] types = Commands.GetSupportedCommandTypes();               // liste complÃ¨te
+bool supported = Commands.IsCommandTypeSupported("ImportResource"); // ✅ correct
+string[] types = Commands.GetSupportedCommandTypes();               // liste complète
 ```
 
-## MÃ©thodes de convenance statiques
+## Méthodes de convenance statiques
 
 ```csharp
-Commands.ImportResource(faction, resource, quantity)     // â†’ CommandResult
-Commands.UnlockBuilding(faction, building)               // â†’ CommandResult
-Commands.ResearchTechnology(faction, technology)         // â†’ CommandResult
-Commands.UnlockKnowledge(faction, knowledge)             // â†’ CommandResult
-Commands.StartDialogue(faction, person, dialogue)        // â†’ CommandResult
-Commands.SetOverride(key, value)                         // â†’ CommandResult
-Commands.Sabotage(targetFaction)                         // â†’ CommandResult
-Commands.SpawnResourceVein(faction, resource, x, y, z)  // â†’ CommandResult
-Commands.GameOver()                                      // â†’ CommandResult
+Commands.ImportResource(faction, resource, quantity)     // → CommandResult
+Commands.UnlockBuilding(faction, building)               // → CommandResult
+Commands.ResearchTechnology(faction, technology)         // → CommandResult
+Commands.UnlockKnowledge(faction, knowledge)             // → CommandResult
+Commands.StartDialogue(faction, person, dialogue)        // → CommandResult
+Commands.SetOverride(key, value)                         // → CommandResult
+Commands.Sabotage(targetFaction)                         // → CommandResult
+Commands.SpawnResourceVein(faction, resource, x, y, z)  // → CommandResult
+Commands.GameOver()                                      // → CommandResult
 ```
 
 ---

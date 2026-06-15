@@ -10,152 +10,152 @@ license: MIT
 ---
 
 
-# Per Aspera â€” Game Structure Reference
+# Per Aspera — Game Structure Reference
 
-> **RÃˆGLE D'OR** : Toujours vÃ©rifier ce document avant de suggÃ©rer une hiÃ©rarchie, un nom de classe, ou un chemin d'accÃ¨s. Les erreurs sur la structure du jeu sont la premiÃ¨re source de bugs dans les mods.
+> **RÈGLE D'OR** : Toujours vérifier ce document avant de suggérer une hiérarchie, un nom de classe, ou un chemin d'accès. Les erreurs sur la structure du jeu sont la première source de bugs dans les mods.
 
 ---
 
-## ðŸ—ï¸ HiÃ©rarchie Principale â€” Code Source ValidÃ©
+## 🏗️ Hiérarchie Principale — Code Source Validé
 
 > Source : `Tools\lispyExtract\BaseGame.cs` + `Universe.cs`
 
 ```
-BaseGame  (MonoBehaviour â€” singleton via champ statique)
-â”‚
-â”œâ”€â”€ static BaseGame self          â† accÃ¨s statique DIRECT au singleton
-â”œâ”€â”€ static BaseGame Get()         â† mÃ©thode statique d'accÃ¨s
-â”‚
-â”œâ”€â”€ keeper: Keeper                â† REGISTRE CENTRAL DE TOUTES LES ENTITÃ‰S
-â”‚   â”œâ”€â”€ map: KeeperMap            â† Dictionary<Handle, IHandleable> â€” accÃ¨s O(1)
-â”‚   â”‚   â”œâ”€â”€ Find<T>(handle): T
-â”‚   â”‚   â”œâ”€â”€ Contains(handle): bool
-â”‚   â”‚   â”œâ”€â”€ Register(entity): Handle
-â”‚   â”‚   â””â”€â”€ Unregister(entity): void
-â”‚   â”œâ”€â”€ handleManager: HandleManager
-â”‚   â””â”€â”€ ecsWorld: World           â† Entity Component System
-â”‚
-â”œâ”€â”€ universe: Universe            â† Ã‰TAT DU JEU (propriÃ©tÃ© publique)
-â”‚   â”œâ”€â”€ planet: Planet            â† LA PLANÃˆTE (propriÃ©tÃ© publique)  âœ…
-â”‚   â”œâ”€â”€ playerFaction: Faction    â† faction du joueur (propriÃ©tÃ© publique) âœ…
-â”‚   â”œâ”€â”€ factions: List<Faction>   â† PRIVÃ‰ â€” utiliser GetFactions() âœ…
-â”‚   â”œâ”€â”€ GetFactions(): List<Faction>
-â”‚   â”œâ”€â”€ GetPlayerFaction(): Faction
-â”‚   â”œâ”€â”€ GetFaction(string name): Faction
-â”‚   â”œâ”€â”€ GetRivalFactions(Faction): IEnumerable<Faction>
-â”‚   â””â”€â”€ GetPlanet(): Planet
-â”‚
-â””â”€â”€ alreadyWokeUp: bool           â† true quand la partie a dÃ©marrÃ© (bouton "wakeup")
-                                     Universe est crÃ©Ã©/initialisÃ© Ã  ce moment-lÃ 
+BaseGame  (MonoBehaviour — singleton via champ statique)
+│
+├── static BaseGame self          ← accès statique DIRECT au singleton
+├── static BaseGame Get()         ← méthode statique d'accès
+│
+├── keeper: Keeper                ← REGISTRE CENTRAL DE TOUTES LES ENTITÉS
+│   ├── map: KeeperMap            ← Dictionary<Handle, IHandleable> — accès O(1)
+│   │   ├── Find<T>(handle): T
+│   │   ├── Contains(handle): bool
+│   │   ├── Register(entity): Handle
+│   │   └── Unregister(entity): void
+│   ├── handleManager: HandleManager
+│   └── ecsWorld: World           ← Entity Component System
+│
+├── universe: Universe            ← ÉTAT DU JEU (propriété publique)
+│   ├── planet: Planet            ← LA PLANÈTE (propriété publique)  ✅
+│   ├── playerFaction: Faction    ← faction du joueur (propriété publique) ✅
+│   ├── factions: List<Faction>   ← PRIVÉ — utiliser GetFactions() ✅
+│   ├── GetFactions(): List<Faction>
+│   ├── GetPlayerFaction(): Faction
+│   ├── GetFaction(string name): Faction
+│   ├── GetRivalFactions(Faction): IEnumerable<Faction>
+│   └── GetPlanet(): Planet
+│
+└── alreadyWokeUp: bool           ← true quand la partie a démarré (bouton "wakeup")
+                                     Universe est créé/initialisé à ce moment-là
 ```
 
-### Lifecycle â€” Quand accÃ©der Ã  quoi
+### Lifecycle — Quand accéder à quoi
 
 ```
 Lancement du jeu
-    â†“
+    ↓
 MainMenu (Universe = null, BaseGame.self = null)
-    â†“
+    ↓
 Joueur clique "New Game" / "Load Game"
-    â†“
+    ↓
 BaseGame s'instancie (MonoBehaviour Awake/Start)
-    BaseGame.self = this  â† disponible
-    â†“
-Joueur clique "Wakeup" (Ã©cran d'intro)
+    BaseGame.self = this  ← disponible
+    ↓
+Joueur clique "Wakeup" (écran d'intro)
     BaseGame.alreadyWokeUp = true
-    Universe crÃ©Ã© et initialisÃ© â† disponible
+    Universe créé et initialisé ← disponible
     universe.planet disponible
     universe.playerFaction disponible
 ```
 
-### âŒ Erreurs LLM frÃ©quentes sur la hiÃ©rarchie
+### ❌ Erreurs LLM fréquentes sur la hiérarchie
 
-| Faux | Vrai (source rÃ©elle) |
+| Faux | Vrai (source réelle) |
 |------|------|
 | `BaseGame.Instance` | `BaseGame.self` ou `BaseGame.Get()` |
 | `Universe.Instance` comme singleton principal | `BaseGame.self` est le singleton |
 | `universe.currentPlanet` | `universe.planet` |
 | `universe.mars` | `universe.planet` |
-| `universe.factions` directement | `universe.factions` est `private` â†’ utiliser `universe.GetFactions()` |
-| `factions[0].buildings` â€” liste directe | Les buildings sont dans le Keeper, accÃ¨s via Handle |
+| `universe.factions` directement | `universe.factions` est `private` → utiliser `universe.GetFactions()` |
+| `factions[0].buildings` — liste directe | Les buildings sont dans le Keeper, accès via Handle |
 | `Universe` contient le `keeper` | C'est `BaseGame` qui contient le `keeper` |
 
 ---
 
-## ðŸ”‘ Handle/Keeper System â€” AccÃ¨s aux EntitÃ©s
+## 🔑 Handle/Keeper System — Accès aux Entités
 
-**Toutes les entitÃ©s du jeu implÃ©mentent `IHandleable`** et sont enregistrÃ©es dans `KeeperMap`.
+**Toutes les entités du jeu implémentent `IHandleable`** et sont enregistrées dans `KeeperMap`.
 
 ```csharp
-// âœ… CORRECT â€” accÃ¨s via Handle
+// ✅ CORRECT — accès via Handle
 var keeperMap = BaseGame.Instance.keeper.map;
 var building = keeperMap.Find<Building>(buildingHandle);   // O(1)
 var faction  = keeperMap.Find<Faction>(factionHandle);
 
-// VÃ©rification sÃ©curisÃ©e
-var building = keeperMap.Find<Building>(handle);  // null si pas trouvÃ©
+// Vérification sécurisée
+var building = keeperMap.Find<Building>(handle);  // null si pas trouvé
 if (building != null) { /* safe */ }
 
-// âŒ INCORRECT â€” traversÃ©e directe inexistante
-// universe.factions[0].buildings  â† propriÃ©tÃ© n'existe PAS
+// ❌ INCORRECT — traversée directe inexistante
+// universe.factions[0].buildings  ← propriété n'existe PAS
 ```
 
-### EntitÃ©s qui implÃ©mentent `IHandleable`
-- `Building` / `ABCBuilding` (base class de tous les bÃ¢timents)
+### Entités qui implémentent `IHandleable`
+- `Building` / `ABCBuilding` (base class de tous les bâtiments)
 - `Faction` (joueur et IA)
 - `Planet`
 - `Universe`
 - `Drone`, `Stockpile`, `Swarm`
-- La plupart des entitÃ©s de gameplay
+- La plupart des entités de gameplay
 
-### AccÃ¨s direct natif (code rÃ©el)
+### Accès direct natif (code réel)
 
 ```csharp
-// AccÃ¨s natif direct â€” champ statique ou mÃ©thode Get()
+// Accès natif direct — champ statique ou méthode Get()
 var baseGame = BaseGame.self;          // champ statique public
-var baseGame = BaseGame.Get();         // mÃ©thode statique Ã©quivalente
-var universe = baseGame.universe;      // propriÃ©tÃ© publique
-var planet   = universe.planet;        // propriÃ©tÃ© publique  âœ…
-var player   = universe.playerFaction; // propriÃ©tÃ© publique  âœ…
+var baseGame = BaseGame.Get();         // méthode statique équivalente
+var universe = baseGame.universe;      // propriété publique
+var planet   = universe.planet;        // propriété publique  ✅
+var player   = universe.playerFaction; // propriété publique  ✅
 var factions = universe.GetFactions(); // GetFactions() car factions est private
 
-// VÃ©rification lifecycle avant accÃ¨s
+// Vérification lifecycle avant accès
 if (BaseGame.self != null && BaseGame.self.alreadyWokeUp)
 {
     var planet = BaseGame.self.universe.planet;
-    // safe â€” la partie a dÃ©marrÃ©
+    // safe — la partie a démarré
 }
 ```
 
-### SDK â€” AccÃ¨s via Wrappers
+### SDK — Accès via Wrappers
 
 ```csharp
-// SDK Wrapper (prÃ©fÃ©rÃ© â€” null-safe, abstraction au-dessus du natif)
+// SDK Wrapper (préféré — null-safe, abstraction au-dessus du natif)
 var baseGame = BaseGameWrapper.GetCurrent();  // ou GameApi.wrapper.basegame
 var planet   = PlanetWrapper.GetCurrent();    // ou GameApi.wrapper.planet
 var universe = UniverseWrapper.GetCurrent();  // ou GameApi.wrapper.universe
 
-// Native (IL2CPP direct â€” uniquement si SDK insuffisant)
+// Native (IL2CPP direct — uniquement si SDK insuffisant)
 var nativeBaseGame = Native.basegame;
 var nativePlanet   = Native.planet;
 ```
 
 ---
 
-## ðŸŒ Planet.cs â€” Getters Disponibles
+## 🌍 Planet.cs — Getters Disponibles
 
-### AtmosphÃ¨re & TempÃ©rature
+### Atmosphère & Température
 ```csharp
-// TempÃ©rature
-planet.GetAverageTemperature()                    // tempÃ©rature globale
-planet.GetTemperature(longitude, latitude)        // position prÃ©cise
-planet.GetBlackBodyTemperature()                  // tempÃ©rature corps noir
+// Température
+planet.GetAverageTemperature()                    // température globale
+planet.GetTemperature(longitude, latitude)        // position précise
+planet.GetBlackBodyTemperature()                  // température corps noir
 
-// Pression atmosphÃ©rique
-planet.GetCO2Pressure()    // â˜… PRIORITÃ‰ HAUTE â€” dioxyde de carbone
-planet.GetO2Pressure()     // â˜… PRIORITÃ‰ HAUTE â€” oxygÃ¨ne
-planet.GetN2Pressure()     // â˜… PRIORITÃ‰ HAUTE â€” azote
-planet.GetGHGPressure()    // gaz Ã  effet de serre
+// Pression atmosphérique
+planet.GetCO2Pressure()    // ★ PRIORITÉ HAUTE — dioxyde de carbone
+planet.GetO2Pressure()     // ★ PRIORITÉ HAUTE — oxygène
+planet.GetN2Pressure()     // ★ PRIORITÉ HAUTE — azote
+planet.GetGHGPressure()    // gaz à effet de serre
 planet.GetTotalPressure()  // pression totale
 
 // Effet de serre
@@ -163,19 +163,19 @@ planet.GetCO2TemperatureIncrease()
 planet.GetGHGTemperatureIncrease()
 ```
 
-### Ã‰nergie & Ressources
+### Énergie & Ressources
 ```csharp
-// Ã‰nergie solaire / Ã©olienne
-planet.GetSolarPowerFactor(latitude)   // â˜… efficacitÃ© panneau solaire
-planet.GetEolicPowerFactor(latitude)   // â˜… efficacitÃ© Ã©olienne
+// Énergie solaire / éolienne
+planet.GetSolarPowerFactor(latitude)   // ★ efficacité panneau solaire
+planet.GetEolicPowerFactor(latitude)   // ★ efficacité éolienne
 planet.GetSurfaceWind(latitude)        // vitesse/direction du vent
 
 // Eau
-planet.GetWaterLevel()     // â˜… niveau eau global
-planet.GetWaterStock()     // â˜… rÃ©serves totales
-planet.GetWaterFactor()    // facteur disponibilitÃ© eau
+planet.GetWaterLevel()     // ★ niveau eau global
+planet.GetWaterStock()     // ★ réserves totales
+planet.GetWaterFactor()    // facteur disponibilité eau
 
-// Glace & CO2 gelÃ©
+// Glace & CO2 gelé
 planet.GetFrozenCO2()
 planet.GetRegolithCO2()
 ```
@@ -184,11 +184,11 @@ planet.GetRegolithCO2()
 ```csharp
 planet.GetTerraformingProgress()   // progression 0-1
 planet.GetSeason()                 // saison actuelle
-planet.GetYearProgress()           // position dans l'annÃ©e
-planet.GetFaunaAmount()            // quantitÃ© de vie animale
+planet.GetYearProgress()           // position dans l'année
+planet.GetFaunaAmount()            // quantité de vie animale
 ```
 
-### GÃ©ographie
+### Géographie
 ```csharp
 planet.GetAltitude(position)
 planet.GetLatitude(position)
@@ -200,12 +200,12 @@ planet.GetPresentResourceVein(buildingType, pos, faction)
 
 ---
 
-## ðŸ—ï¸ Building System
+## 🏗️ Building System
 
-### HiÃ©rarchie des classes
+### Hiérarchie des classes
 ```csharp
-ABCBuilding           // Classe abstraite de base â€” implÃ©mente IHandleable
-â””â”€â”€ Building          // Classe concrÃ¨te
+ABCBuilding           // Classe abstraite de base — implémente IHandleable
+└── Building          // Classe concrète
 
 public class Building  // (ABCBuilding)
 {
@@ -226,7 +226,7 @@ public class BuildingType  // configuration STATIQUE (YAML-driven)
     // + costs, prerequisites, categories
 }
 
-public class BuildingConnections  // rÃ©seau Ã©lectrique / pipes
+public class BuildingConnections  // réseau électrique / pipes
 {
     public List<Building> connectedBuildings { get; }
     public bool isConnectedToElectricityNetwork { get; }
@@ -235,36 +235,36 @@ public class BuildingConnections  // rÃ©seau Ã©lectrique / pipes
 
 ---
 
-## âš™ï¸ Classes ClÃ©s â€” RÃ©sumÃ©
+## ⚙️ Classes Clés — Résumé
 
-| Classe | Importance | RÃ´le |
+| Classe | Importance | Rôle |
 |--------|-----------|------|
-| `BaseGame` | â˜…â˜…â˜… CRITIQUE | Singleton principal, contient `keeper` et `universe` |
-| `Building` / `ABCBuilding` | â˜…â˜…â˜… CRITIQUE | Base de tous les bÃ¢timents |
-| `Planet` | â˜…â˜…â˜… CRITIQUE | PlanÃ¨te + tous les getters climatiques |
-| `ResourceType` | â˜…â˜…â˜… CRITIQUE | Config des ressources |
-| `BuildingType` | â˜…â˜…â˜… CRITIQUE | Config statique des bÃ¢timents (YAML) |
-| `Handle` | â˜…â˜… IMPORTANT | Identifiant unique de chaque entitÃ© |
-| `KeeperMap` | â˜…â˜… IMPORTANT | RÃ©solution Handle â†’ entitÃ© |
-| `Keeper` | â˜…â˜… IMPORTANT | Registre central |
-| `Universe` | â˜…â˜… IMPORTANT | Ã‰tat du jeu (factions, planÃ¨te) |
-| `Faction` | â˜…â˜… IMPORTANT | Joueur + IA |
-| `Atmosphere` | â˜…â˜… IMPORTANT | Simulation atmosphÃ©rique |
-| `GameEventBus` | â˜…â˜… IMPORTANT | SystÃ¨me d'Ã©vÃ©nements |
-| `Drone` | â˜… | Drones autonomes |
-| `CargoQuantity` | â˜… | QuantitÃ© de ressource |
-| `ResourceVein` | â˜… | Gisements de ressources |
-| `InteractionManager` | â˜… | Moteur de rÃ¨gles Ã©vÃ©nementielles |
+| `BaseGame` | ★★★ CRITIQUE | Singleton principal, contient `keeper` et `universe` |
+| `Building` / `ABCBuilding` | ★★★ CRITIQUE | Base de tous les bâtiments |
+| `Planet` | ★★★ CRITIQUE | Planète + tous les getters climatiques |
+| `ResourceType` | ★★★ CRITIQUE | Config des ressources |
+| `BuildingType` | ★★★ CRITIQUE | Config statique des bâtiments (YAML) |
+| `Handle` | ★★ IMPORTANT | Identifiant unique de chaque entité |
+| `KeeperMap` | ★★ IMPORTANT | Résolution Handle → entité |
+| `Keeper` | ★★ IMPORTANT | Registre central |
+| `Universe` | ★★ IMPORTANT | État du jeu (factions, planète) |
+| `Faction` | ★★ IMPORTANT | Joueur + IA |
+| `Atmosphere` | ★★ IMPORTANT | Simulation atmosphérique |
+| `GameEventBus` | ★★ IMPORTANT | Système d'événements |
+| `Drone` | ★ | Drones autonomes |
+| `CargoQuantity` | ★ | Quantité de ressource |
+| `ResourceVein` | ★ | Gisements de ressources |
+| `InteractionManager` | ★ | Moteur de règles événementielles |
 
 ---
 
-## ðŸŽ¬ ScÃ¨nes Unity
+## 🎬 Scènes Unity
 
 ```
-ScÃ¨nes du jeu Per Aspera :
-â”œâ”€â”€ MainMenu          â€” menu principal
-â”œâ”€â”€ LoadingScene      â€” chargement (LoadingSceneController)
-â””â”€â”€ GameScene         â€” jeu principal (BaseGame.Instance actif ici)
+Scènes du jeu Per Aspera :
+├── MainMenu          — menu principal
+├── LoadingScene      — chargement (LoadingSceneController)
+└── GameScene         — jeu principal (BaseGame.Instance actif ici)
 ```
 
 **SDK Scene Access** :
@@ -274,7 +274,7 @@ using PerAspera.GameAPI.Wrappers;
 var currentScene = SceneManager.GetActiveScene();
 var name = currentScene.Name;   // "GameScene", "MainMenu", etc.
 
-// Event de chargement de scÃ¨ne
+// Event de chargement de scène
 SceneManager.SceneLoaded += (scene, mode) => {
     if (scene.Name == "GameScene") {
         // BaseGame.Instance est maintenant disponible
@@ -282,81 +282,81 @@ SceneManager.SceneLoaded += (scene, mode) => {
 };
 ```
 
-> âš ï¸ `BaseGame.Instance` n'est valide **qu'en GameScene**. Toujours vÃ©rifier que la scÃ¨ne est chargÃ©e avant d'accÃ©der aux wrappers SDK.
+> ⚠️ `BaseGame.Instance` n'est valide **qu'en GameScene**. Toujours vérifier que la scène est chargée avant d'accéder aux wrappers SDK.
 
 ---
 
-## ðŸŽ¯ Interaction System (Moteur de rÃ¨gles)
+## 🎯 Interaction System (Moteur de règles)
 
 Le jeu utilise un **event-driven rule engine** pour les notifications, missions, et actions de jeu :
 
 ```
-GameEvent â†’ InteractionManager â†’ InteractionRule (filtre par eventType)
-         â†’ Criteria[] (toutes les conditions doivent matcher)
-         â†’ TextAction[] (exÃ©cutÃ©es si criteria passent)
-         â†’ Action Results (notifications, missions, etc.)
+GameEvent → InteractionManager → InteractionRule (filtre par eventType)
+         → Criteria[] (toutes les conditions doivent matcher)
+         → TextAction[] (exécutées si criteria passent)
+         → Action Results (notifications, missions, etc.)
 ```
 
 ```csharp
-// InteractionManager est liÃ© Ã  une faction spÃ©cifique
+// InteractionManager est lié à une faction spécifique
 var manager = new InteractionManager(playerFaction);
 
 // Cycle de vie
 manager.SubscribeEventHandlers();   // abonnement aux events
 manager.OnEvent(source, ref evt);   // traitement d'un event
-manager.OnTick(deltaTime);          // actions diffÃ©rÃ©es
+manager.OnTick(deltaTime);          // actions différées
 manager.UnsubscribeEventHandlers(); // cleanup
 ```
 
 ---
 
-## ðŸš« Anti-Patterns â€” Erreurs LLM Ã  Ã‰viter
+## 🚫 Anti-Patterns — Erreurs LLM à Éviter
 
 ```csharp
-// âŒ FAUX â€” Universe n'est pas le singleton principal
-// Universe.Instance  â† n'existe pas comme accÃ¨s autonome
-// BaseGame.self.universe  â† CORRECT
+// ❌ FAUX — Universe n'est pas le singleton principal
+// Universe.Instance  ← n'existe pas comme accès autonome
+// BaseGame.self.universe  ← CORRECT
 
-// âš ï¸ NOTE : Universe A un keeper (backing field privÃ© + propriÃ©tÃ© publique),
-// mais BaseGame.self est le point d'entrÃ©e principal, pas Universe.Instance
+// ⚠️ NOTE : Universe A un keeper (backing field privé + propriété publique),
+// mais BaseGame.self est le point d'entrée principal, pas Universe.Instance
 
-// âŒ FAUX â€” les buildings ne sont pas dans les factions directement
-universe.factions[0].buildings  // propriÃ©tÃ© n'existe PAS
-// âœ… CORRECT: universe.GetFactions()[0]._buildings (protected) ou via Ã©vÃ©nements
+// ❌ FAUX — les buildings ne sont pas dans les factions directement
+universe.factions[0].buildings  // propriété n'existe PAS
+// ✅ CORRECT: universe.GetFactions()[0]._buildings (protected) ou via événements
 
-// âŒ FAUX â€” mauvais nom de propriÃ©tÃ© planÃ¨te
-universe.currentPlanet  // âŒ n'existe pas
-universe.mars           // âŒ c'est le BACKING FIELD PRIVÃ‰
-// âœ… CORRECT: universe.planet  (propriÃ©tÃ© publique)
+// ❌ FAUX — mauvais nom de propriété planète
+universe.currentPlanet  // ❌ n'existe pas
+universe.mars           // ❌ c'est le BACKING FIELD PRIVÉ
+// ✅ CORRECT: universe.planet  (propriété publique)
 
-// â„¹ï¸ Type nu : OK dans ce workspace (alias global Type=System.Type, Directory.Build.props)
-Type _buildingType;         // âœ… rÃ©sout vers System.Type via l'alias
-System.Type _buildingType;  // âœ… explicite â€” OK aussi (requis hors workspace)
+// ℹ️ Type nu : OK dans ce workspace (alias global Type=System.Type, Directory.Build.props)
+Type _buildingType;         // ✅ résout vers System.Type via l'alias
+System.Type _buildingType;  // ✅ explicite — OK aussi (requis hors workspace)
 
-// âŒ FAUX â€” BaseUnityPlugin en IL2CPP
-public class MyMod : BaseUnityPlugin  // âŒ
-public class MyMod : BasePlugin       // âœ… BepInX IL2CPP
+// ❌ FAUX — BaseUnityPlugin en IL2CPP
+public class MyMod : BaseUnityPlugin  // ❌
+public class MyMod : BasePlugin       // ✅ BepInX IL2CPP
 
-// âŒ FAUX â€” UnityEngine.Input indisponible en IL2CPP
-// UnityEngine.Input.GetKeyDown(KeyCode.F9)  â† FONCTIONNE parfaitement
+// ❌ FAUX — UnityEngine.Input indisponible en IL2CPP
+// UnityEngine.Input.GetKeyDown(KeyCode.F9)  ← FONCTIONNE parfaitement
 ```
 
 ---
 
-## ï¿½ RÃ©fÃ©rence ComplÃ¨te des Classes â€” Code Source ValidÃ©
+## � Référence Complète des Classes — Code Source Validé
 
-> Source : `Tools\lispyExtract\` (IL2CPP dump rÃ©el du jeu)
+> Source : `Tools\lispyExtract\` (IL2CPP dump réel du jeu)
 
-### BaseGame â€” Singleton Principal (MonoBehaviour)
+### BaseGame — Singleton Principal (MonoBehaviour)
 
 ```csharp
 public class BaseGame : MonoBehaviour
 {
-    // â”€â”€ AccÃ¨s statique â”€â”€
-    public static BaseGame self;                          // SINGLETON â€” champ statique direct
+    // ── Accès statique ──
+    public static BaseGame self;                          // SINGLETON — champ statique direct
     public static Universe _universe { get; }             // alias statique de universe
-    public static Faction SelectedFaction { get; set; }   // faction sÃ©lectionnÃ©e dans l'UI
-    public static bool ECSSystemsOn;                      // ECS activÃ© ?
+    public static Faction SelectedFaction { get; set; }   // faction sélectionnée dans l'UI
+    public static bool ECSSystemsOn;                      // ECS activé ?
     public static bool hasCheats;
     public static bool hasMods;
     public static Difficulty difficulty;                  // enum: VeryEasy=3, Easy=0, Normal=1, Hard=2
@@ -365,17 +365,17 @@ public class BaseGame : MonoBehaviour
     public static bool isEnding { get; }
     public static event Action onFinishLoadingConfigs;
 
-    // â”€â”€ PropriÃ©tÃ©s d'instance â”€â”€
-    public Universe universe { get; }                     // Ã©tat du jeu â€” TOUJOURS passer par ici
-    public Keeper keeper { get; }                         // registre central des entitÃ©s
-    public bool alreadyWokeUp;                           // true = partie dÃ©marrÃ©e, universe valide
+    // ── Propriétés d'instance ──
+    public Universe universe { get; }                     // état du jeu — TOUJOURS passer par ici
+    public Keeper keeper { get; }                         // registre central des entités
+    public bool alreadyWokeUp;                           // true = partie démarrée, universe valide
     public bool isLoading;
     public bool MainSceneHasFinishedInit;
     public bool enableHotkeys;
     public bool disablePauseButton;
     public string multiplayerID;
 
-    // â”€â”€ RÃ©fÃ©rences scÃ¨ne â”€â”€
+    // ── Références scène ──
     public OrbitingCamera cameraController;
     public InputRaycaster inputRaycaster;
     public KeyMapper keyMapper;
@@ -384,14 +384,14 @@ public class BaseGame : MonoBehaviour
     public SelectedInfoPanelPresenter selectedInfoPanelPresenter;
     public PlanetSampler planetSampler;
 
-    // â”€â”€ Visuels (dictionnaires entitÃ©s â†’ vues) â”€â”€
+    // ── Visuels (dictionnaires entités → vues) ──
     public Dictionary<Building, BuildingPresenter> visualBuildings;
     public Dictionary<ResourceVein, VisualResourceVein> visualVeins;
     public Dictionary<SpecialSite, VisualResourceVein> visualSites;
     public Dictionary<Drone, DroneView> visualDrones;
     public Dictionary<Way, VisualWay> visualWays;
 
-    // â”€â”€ MÃ©thodes statiques clÃ©s â”€â”€
+    // ── Méthodes statiques clés ──
     public static InitialSetup GetInitialSetupStatus();
     public static void SetupNewGame();
     public static bool SetupLoadGame(string file);
@@ -399,25 +399,25 @@ public class BaseGame : MonoBehaviour
     public static void ForAllConfigs(bool save = false, bool load = false);
     public static void OnEditorApplicationPreQuit();
 
-    // â”€â”€ MÃ©thodes d'instance â”€â”€
+    // ── Méthodes d'instance ──
     public void ExitToMainMenu();
     public void ForceExit();
     public void StartGameplay();
     public void OnFinishLoading();
     public bool IsMultiplayer();
 
-    // â”€â”€ Enums internes â”€â”€
+    // ── Enums internes ──
     // InitialSetup: None, NewGame, LoadGame
     // Difficulty: VeryEasy=3, Easy=0, Normal=1, Hard=2
 }
 ```
 
-### Universe â€” Ã‰tat du Jeu
+### Universe — État du Jeu
 
 ```csharp
 public class Universe : IHandleable, IDisposable
 {
-    // â”€â”€ Constantes â”€â”€
+    // ── Constantes ──
     public const string GAME_VERSION = "1.8";
     public const int TICKS_PER_DAY = 1;
     public const int MAX_TOTAL_BUILDINGS = 3500;
@@ -425,7 +425,7 @@ public class Universe : IHandleable, IDisposable
     public static int VERSION_MINOR_LOADED;
     public static int VERSION_MAJOR_LOADED;
 
-    // â”€â”€ Champs publics â”€â”€
+    // ── Champs publics ──
     public int VERSION_CURRENT;
     public float _daysSinceStart;
     public RNG rng;
@@ -441,10 +441,10 @@ public class Universe : IHandleable, IDisposable
     public static int SharedSeed;
     public static readonly int[] darianCal;   // calendrier martien (jours/mois)
 
-    // â”€â”€ PropriÃ©tÃ©s publiques â”€â”€
+    // ── Propriétés publiques ──
     public Faction playerFaction { get; }       // faction du joueur
     public Handle handle { get; }               // IHandleable
-    public Keeper keeper { get; }               // registre des entitÃ©s du jeu
+    public Keeper keeper { get; }               // registre des entités du jeu
     public Explosions explosions { get; }
     public FloraBackend flora { get; }
     public RandomEventSystem randomEventSystem { get; }
@@ -452,12 +452,12 @@ public class Universe : IHandleable, IDisposable
     public HistoryUniverse historyUniverse { get; }
     public float deltaDays { get; }             // delta de jeu (jours) depuis dernier tick
     public RoutingMediator routingMediator { get; }
-    public GameEventBus gameEventBus { get; }   // bus d'Ã©vÃ©nements CENTRAL
+    public GameEventBus gameEventBus { get; }   // bus d'événements CENTRAL
     public CommandBus commandBus { get; }
     public bool initializingGame { get; }
-    public Planet planet { get; }               // â† PROPRIÃ‰TÃ‰ PUBLIQUE (backing: private Planet mars)
+    public Planet planet { get; }               // ← PROPRIÉTÉ PUBLIQUE (backing: private Planet mars)
 
-    // â”€â”€ Ã‰vÃ©nements statiques â”€â”€
+    // ── Événements statiques ──
     public static readonly GameEventType GevUniverseStatsUpdated;
     public static readonly GameEventType GevUniverseDayPassed;
     public static readonly GameEventType GevUniverseExplosion;
@@ -468,8 +468,8 @@ public class Universe : IHandleable, IDisposable
     public static readonly GameEventType GevUniverseNewGameStarted;
     public static readonly GameEventType GevUniverseContinueEndedGame;
 
-    // â”€â”€ MÃ©thodes clÃ©s â”€â”€
-    public List<Faction> GetFactions();                           // factions est PRIVÃ‰
+    // ── Méthodes clés ──
+    public List<Faction> GetFactions();                           // factions est PRIVÉ
     public Faction GetPlayerFaction();
     public Faction GetFaction(string factionName);
     public IEnumerable<Faction> GetRivalFactions(Faction faction);
@@ -498,12 +498,12 @@ public class Universe : IHandleable, IDisposable
 }
 ```
 
-### Planet â€” La PlanÃ¨te Mars
+### Planet — La Planète Mars
 
 ```csharp
 public class Planet : IHandleable, IDisposable, IFinishedSerializingRegenerate
 {
-    // â”€â”€ Ã‰vÃ©nements statiques â”€â”€
+    // ── Événements statiques ──
     public static readonly GameEventType GevPlanetTemperatureChanged;
     public static readonly GameEventType GevPlanetPressureChanged;
     public static readonly GameEventType GevPlanetPressureO2LevelChanged;
@@ -513,7 +513,7 @@ public class Planet : IHandleable, IDisposable, IFinishedSerializingRegenerate
     public static readonly GameEventType GevHazardDespawned;
     public static readonly GameEventType GevPlanetWaterStockChanged;
 
-    // â”€â”€ Constantes atmosphÃ©riques (noms de stats) â”€â”€
+    // ── Constantes atmosphériques (noms de stats) ──
     public const string STAT_TEMPERATURE_TOTAL = "Temperature";
     public const string STAT_TEMPERATURE_BLACKBODY = "BlackBodyTemperature";
     public const string STAT_TEMPERATURE_CO2 = "CO2Temperature";
@@ -534,7 +534,7 @@ public class Planet : IHandleable, IDisposable, IFinishedSerializingRegenerate
     public const float maxAltitude = 24.5f;      // km
     public const float verticalExaggeration = 3f;
 
-    // â”€â”€ Champs publics atmosphÃ©riques (valeurs accumulÃ©es) â”€â”€
+    // ── Champs publics atmosphériques (valeurs accumulées) ──
     public float previousPressure;
     public float previousO2Pressure;
     public float previousCO2Pressure;
@@ -542,11 +542,11 @@ public class Planet : IHandleable, IDisposable, IFinishedSerializingRegenerate
     public float accCO2Temperature;                // contribution CO2
     public float accGHGTemperature;                // contribution GHG
     public float accSpaceMirrorTemperature;        // contribution miroir spatial
-    public float accCometTemperature;              // contribution comÃ¨te
+    public float accCometTemperature;              // contribution comète
     public float accDeimosTemperature;             // contribution Deimos
     public float accO3Temperature;                 // contribution ozone
 
-    // â”€â”€ Champs publics biosphÃ¨re â”€â”€
+    // ── Champs publics biosphère ──
     public float plantsShare;
     public float lichenShare;
     public float cyanobacteriaShare;
@@ -559,7 +559,7 @@ public class Planet : IHandleable, IDisposable, IFinishedSerializingRegenerate
     public float faunaPlantsShare;
     public float amountMultiplier;
 
-    // â”€â”€ Champs publics ressources â”€â”€
+    // ── Champs publics ressources ──
     public HistoricalStatsDictionary stats;
     public HazardsManager HazardsManager;
     public Dictionary<SpecialSite, ResourceVein> _specialSites;
@@ -567,8 +567,8 @@ public class Planet : IHandleable, IDisposable, IFinishedSerializingRegenerate
     public List<ResourceVein> floodableResourceVeins;
     public float heightmapResolution;
 
-    // â”€â”€ PropriÃ©tÃ©s atmosphÃ©riques (getters) â”€â”€
-    public Universe universe { get; }              // rÃ©fÃ©rence retour
+    // ── Propriétés atmosphériques (getters) ──
+    public Universe universe { get; }              // référence retour
     public Handle handle { get; }                  // IHandleable
     public float waterStock { get; set; }
     public float waterPermafrostDeposits { get; set; }
@@ -579,17 +579,17 @@ public class Planet : IHandleable, IDisposable, IFinishedSerializingRegenerate
     public float magnetosphereProtection { get; set; }
     public float waterStockTarget { get; set; }
     public float polarExclusionRadius { get; set; }
-    public float o2Ratio { get; }                  // ratio O2 calculÃ©
-    public float co2Ratio { get; }                 // ratio CO2 calculÃ©
+    public float o2Ratio { get; }                  // ratio O2 calculé
+    public float co2Ratio { get; }                 // ratio CO2 calculé
     public float flammabilityChance { get; }
 
-    // âš ï¸ NOTE : Les valeurs de pression/tempÃ©rature rÃ©elles (o2Pressure, co2Pressure, etc.)
-    // sont des CHAMPS PRIVÃ‰S â€” accÃ¨s via stats ou via les events GevPlanet*
+    // ⚠️ NOTE : Les valeurs de pression/température réelles (o2Pressure, co2Pressure, etc.)
+    // sont des CHAMPS PRIVÉS — accès via stats ou via les events GevPlanet*
 
-    // â”€â”€ Saisons â”€â”€
+    // ── Saisons ──
     // enum Season: SOUTHERN_SUMMER, SOUTHERN_AUTUMN, SOUTHERN_WINTER, SOUTHERN_SPRING
 
-    // â”€â”€ enum InvalidPlacement.Reason â”€â”€
+    // ── enum InvalidPlacement.Reason ──
     // TooFarFromBase, UnevenTerrain, Collision, NeedsResource, IncompatibleResource,
     // BlocksResource, NoSectorPermission, Underwater, NoPower, NoMaintenance,
     // HyperloopClose, FloodableArea, NeedsEquatorialStrip, NeedsSufficientPressure,
@@ -598,7 +598,7 @@ public class Planet : IHandleable, IDisposable, IFinishedSerializingRegenerate
     // NeedsHigherExtractionLevel, FarmClose, NotEnoughValidTerrain, NoPipes,
     // NeedsOcean, NeedsAquaticPlacement, UnderRiver
 
-    // â”€â”€ MÃ©thodes clÃ©s â”€â”€
+    // ── Méthodes clés ──
     public Vector2 GetRandomPosition();
     public Vector2 GetRandomPositionRadius(Vector2 position, float radius);
     public Vector2 GetRandomPositionRing(Vector2 position, float minRadius, float maxRadius);
@@ -611,12 +611,12 @@ public class Planet : IHandleable, IDisposable, IFinishedSerializingRegenerate
 }
 ```
 
-### Faction â€” Faction de Jeu
+### Faction — Faction de Jeu
 
 ```csharp
 public class Faction : IHandleable  // (IDisposable, IFromFaction implicites)
 {
-    // â”€â”€ Constantes â”€â”€
+    // ── Constantes ──
     public const string FACTION_PLAYER = "PlayerFaction";
     public const string FACTION_RIVAL = "RivalFaction";
     public const int MAX_FACTIONS = 4;
@@ -629,7 +629,7 @@ public class Faction : IHandleable  // (IDisposable, IFromFaction implicites)
     public const string WATER_PRODUCTION = "water_production";
     public const string WATER_CONSUMPTION = "water_consumption";
 
-    // â”€â”€ Champs publics (entitÃ©s de jeu) â”€â”€
+    // ── Champs publics (entités de jeu) ──
     public InteractionManager interactionManager;
     public List<Drone> drones;
     public HistoricalStatsDictionary stats;
@@ -650,13 +650,13 @@ public class Faction : IHandleable  // (IDisposable, IFromFaction implicites)
     public BuildingIODependencies buildingDependencies;
     public BuildingPriorityManager buildingPriorities;
     public WayManager wayManager;
-    public Electricity electricity;                   // systÃ¨me Ã©lectrique de la faction
+    public Electricity electricity;                   // système électrique de la faction
     public MaintenanceClustering maintenanceClustering;
     public List<RailedCarrier> railedCarriers;
     public List<Zeppelin> zeppelins;
     public ScannerComponent.TileState[] scannerTiles;
     public MigrationManager migrationManager;
-    public Enhancements enhancements;                 // amÃ©liorations actives
+    public Enhancements enhancements;                 // améliorations actives
     public ResourceAllocation resourceAllocation;
     public NotificationsManager notifications;
     public Blackboard blackboardFaction;
@@ -671,16 +671,16 @@ public class Faction : IHandleable  // (IDisposable, IFromFaction implicites)
     public List<Building> queuedWayGenerationBuildings;
     public int lastBuildingCount;
 
-    // â”€â”€ Champs protÃ©gÃ©s (accÃ¨s dans sous-classes) â”€â”€
-    protected List<Building> _buildings;              // liste des bÃ¢timents
+    // ── Champs protégés (accès dans sous-classes) ──
+    protected List<Building> _buildings;              // liste des bâtiments
     protected List<Way> ways;                         // routes
     protected List<Technology> technologyProgress;    // techs en cours
     protected List<MilitaryDrone> militaryDrones;
     protected QuestManager questManager;
     protected AchievementManager achievementManager;
 
-    // â”€â”€ PropriÃ©tÃ©s â”€â”€
-    public int id { get; }                            // identifiant numÃ©rique
+    // ── Propriétés ──
+    public int id { get; }                            // identifiant numérique
     public Handle handle { get; }                     // IHandleable
     public List<Swarm> swarms { get; }                // essaims (combat)
     public HashSet<KnowledgeType> knownKnowledge { get; }
@@ -689,7 +689,7 @@ public class Faction : IHandleable  // (IDisposable, IFromFaction implicites)
     public int pendingLandingSites { get; }
     public List<MaintenanceDrone> maintenanceDrones { get; }
 
-    // â”€â”€ Ã‰vÃ©nements statiques â”€â”€
+    // ── Événements statiques ──
     public static readonly GameEventType GevFactionResourceVeinRevealed;
     public static readonly GameEventType GevFactionQuestUnlocked;
     public static readonly GameEventType GevFactionQuestCompleted;
@@ -719,18 +719,18 @@ public class Faction : IHandleable  // (IDisposable, IFromFaction implicites)
 }
 ```
 
-### Building â€” BÃ¢timent de Jeu
+### Building — Bâtiment de Jeu
 
 ```csharp
 public class Building : ABCBuilding  // extends ABCBuilding : IHandleable
 {
-    // â”€â”€ enum WorkState â”€â”€
-    // (chercher dans Building.cs â€” Ã©tats: idle, building, scrapping, upgrading...)
+    // ── enum WorkState ──
+    // (chercher dans Building.cs — états: idle, building, scrapping, upgrading...)
 
-    // â”€â”€ enum DamageType â”€â”€
-    // (chercher dans Building.cs â€” combat, asteroid, sandstorm...)
+    // ── enum DamageType ──
+    // (chercher dans Building.cs — combat, asteroid, sandstorm...)
 
-    // â”€â”€ Ã‰vÃ©nements statiques â”€â”€
+    // ── Événements statiques ──
     public static readonly GameEventType GevBuildingInternalAdd;
     public static readonly GameEventType GevBuildingInternalAddNew;
     public static readonly GameEventType GevBuildingInternalLoad;
@@ -760,8 +760,8 @@ public class Building : ABCBuilding  // extends ABCBuilding : IHandleable
     public static readonly GameEventType GevBuildingDistrictChangedActive;
     public static readonly GameEventType GevBuildingDamagedByAsteroid;
 
-    // â”€â”€ Champs publics â”€â”€
-    public WorkState _workInProgress;               // Ã©tat de construction
+    // ── Champs publics ──
+    public WorkState _workInProgress;               // état de construction
     public BuildingType pendingUpgradeTo;            // upgrade en attente
     public Dictionary<ResourceType, CargoQuantity> pendingUpgradeMaterials;
     public bool pendingScrap;
@@ -769,7 +769,7 @@ public class Building : ABCBuilding  // extends ABCBuilding : IHandleable
     public float accumulatedEnergy;
     public List<Drone> dockedDrones;
     public DroneAccounting droneAccounting;
-    public ResourceVein vein;                        // gisement exploitÃ© (si mine)
+    public ResourceVein vein;                        // gisement exploité (si mine)
     public ScannerComponent scanner;
     public SpacePortComponent spaceportComponent;
     public HistoryIndividual historySelf;
@@ -801,19 +801,19 @@ public class Building : ABCBuilding  // extends ABCBuilding : IHandleable
     public DeforesterComponent deforesterComponent;
     public float lastDroneLifespan;
 
-    // â”€â”€ PropriÃ©tÃ©s publiques â”€â”€
-    public int number { get; }                       // identifiant numÃ©rique unique
-    public Vector2 position { get; }                 // position 2D sur la planÃ¨te
-    public float foundationDate { get; }             // jours depuis le dÃ©but
+    // ── Propriétés publiques ──
+    public int number { get; }                       // identifiant numérique unique
+    public Vector2 position { get; }                 // position 2D sur la planète
+    public float foundationDate { get; }             // jours depuis le début
     public Stockpile stockpile { get; }              // stock de ressources
-    public WorkState workInProgress { get; }         // Ã©tat de travail
+    public WorkState workInProgress { get; }         // état de travail
     public float workProgress { get; }               // progression 0-1
-    public List<Drone> homeDockedDrones { get; }     // drones logÃ©s ici
-    public List<Drone> assignedDrones { get; }       // drones assignÃ©s Ã  ce bÃ¢timent
+    public List<Drone> homeDockedDrones { get; }     // drones logés ici
+    public List<Drone> assignedDrones { get; }       // drones assignés à ce bâtiment
     public ProductivityBuffer powerEfficiency { get; }
     public List<MaintenanceDrone> homeDockedMaintenanceDrones { get; }
     public bool advancedStorageMode { get; }
-    public List<Drone> assignedDronesHP { get; }     // drones haute prioritÃ©
+    public List<Drone> assignedDronesHP { get; }     // drones haute priorité
     public bool wasDestroyedByAttack { get; }
     public bool IsHyperLoop { get; }
     public bool IsHyperLoopAndConnected { get; }
@@ -823,29 +823,29 @@ public class Building : ABCBuilding  // extends ABCBuilding : IHandleable
     public Quaternion upLookRotation { get; }
     public RouterHandle router { get; }
     public RequirementList ownRequirements { get; }  // requirements actifs
-    public Faction faction { get; }                  // faction propriÃ©taire
-    public float HealthFactor { get; }               // santÃ© 0-1
+    public Faction faction { get; }                  // faction propriétaire
+    public float HealthFactor { get; }               // santé 0-1
     public bool HasLowHealth { get; }
     public bool HasAquaticConection { get; }
-    // HÃ‰RITÃ‰ DE ABCBuilding:
+    // HÉRITÉ DE ABCBuilding:
     public Handle handle { get; }                    // IHandleable
     public abstract string GetName();
     public abstract void Dispose();
 }
 ```
 
-### BuildingType â€” Configuration Statique des BÃ¢timents (YAML)
+### BuildingType — Configuration Statique des Bâtiments (YAML)
 
 ```csharp
 public class BuildingType : IStaticDataCollectionItem
 {
-    // â”€â”€ Enum Availability â”€â”€
+    // ── Enum Availability ──
     // Available, Hidden, Disabled, Removed
 
-    // â”€â”€ Enum NodeType â”€â”€
+    // ── Enum NodeType ──
     // None, SimpleNode, Hub, WayBuildingNode, HyperloopHub, ...
 
-    // â”€â”€ Constantes de types de bÃ¢timents (noms YAML) â”€â”€
+    // ── Constantes de types de bâtiments (noms YAML) ──
     public const string YAML_TAG_NAME = "!building";
     public static string LANDING_SITE;               // "landing_site"
     public static string ADV_LANDING_SITE;           // "advanced_landing_site"
@@ -885,7 +885,7 @@ public class BuildingType : IStaticDataCollectionItem
     public static string WATER_NODE;
     public static string ATMOSPHERIC_HUMIDIFIER;
 
-    // â”€â”€ Champs publics (config YAML) â”€â”€
+    // ── Champs publics (config YAML) ──
     public BuildingCategoryType categoryType;
     public Availability availability;
     public Dictionary<ResourceType, CargoQuantity> inputResources;
@@ -928,7 +928,7 @@ public class BuildingType : IStaticDataCollectionItem
     public BuildingType isAquaticVersionOf;
     public string prefabZeppelinOverride;
 
-    // â”€â”€ PropriÃ©tÃ©s â”€â”€
+    // ── Propriétés ──
     public string compactName { get; }               // nom court
     public KnowledgeType knowledge { get; }          // knowledge requis
     public bool IsFactory { get; }
@@ -936,16 +936,16 @@ public class BuildingType : IStaticDataCollectionItem
 }
 ```
 
-### ResourceType â€” Types de Ressources
+### ResourceType — Types de Ressources
 
 ```csharp
 public class ResourceType
 {
-    // â”€â”€ Enums â”€â”€
+    // ── Enums ──
     // MaterialType: (chercher dans ResourceType.cs)
     // UnitType: (chercher dans ResourceType.cs)
 
-    // â”€â”€ Constantes des ressources (clÃ©s YAML) â”€â”€
+    // ── Constantes des ressources (clés YAML) ──
     public const string YAML_TAG_NAME = "!resource";
     public const string WATER = "resource_water";
     public const string SILICON = "resource_silicon";
@@ -986,7 +986,7 @@ public class ResourceType
     public const string WATER_AREA = "resource_water_area";
     public const string HUMIDITY = "resource_humidity";
 
-    // â”€â”€ Champs publics â”€â”€
+    // ── Champs publics ──
     public Sprite iconName;
     public Sprite altIconName;
     public Sprite orbitalIconName;
@@ -1002,31 +1002,31 @@ public class ResourceType
     public string potentialProductionStatName;
     public string currentProductionStatName;
 
-    // â”€â”€ PropriÃ©tÃ©s â”€â”€
+    // ── Propriétés ──
     public static int _MaxIndex { get; }             // nombre de types de ressources
     public static ResourceType[] NonVirtualResources { get; }
-    public static ResourceType[] ValueByIndex { get; } // accÃ¨s par index numÃ©rique
-    public KnowledgeType knowledge { get; }          // connaissance associÃ©e
-    public int index { get; }                        // index numÃ©rique unique
+    public static ResourceType[] ValueByIndex { get; } // accès par index numérique
+    public KnowledgeType knowledge { get; }          // connaissance associée
+    public int index { get; }                        // index numérique unique
 
-    // â”€â”€ MÃ©thodes â”€â”€
+    // ── Méthodes ──
     public Color GetColor();
-    public string GetName();                         // nom localisÃ©
-    public string GetRawName();                      // clÃ© YAML
+    public string GetName();                         // nom localisé
+    public string GetRawName();                      // clé YAML
     public string GetPrefabName();
     public static void PostInitialize();
     public static void AssignMaxIndex();
 }
 ```
 
-### Keeper & Handle â€” SystÃ¨me d'EntitÃ©s
+### Keeper & Handle — Système d'Entités
 
 ```csharp
-// Handle â€” identifiant unique immuable
+// Handle — identifiant unique immuable
 public struct Handle : IEquatable<Handle>
 {
     public static readonly Handle Null;    // handle invalide (index=-1 ou 0)
-    public readonly int index;             // position dans le tableau d'entitÃ©s
+    public readonly int index;             // position dans le tableau d'entités
     public readonly int version;           // version anti-stale
     public Handle(int index, int version);
     public static bool operator ==(Handle hl, Handle hr);
@@ -1036,14 +1036,14 @@ public struct Handle : IEquatable<Handle>
     public override string ToString();
 }
 
-// IHandleable â€” interface de toute entitÃ© gÃ©rÃ©e
+// IHandleable — interface de toute entité gérée
 public interface IHandleable : IDisposable
 {
     Handle handle { get; }
     string ToStringCompact();
 }
 
-// KeeperMap â€” rÃ©solution Handle â†’ entitÃ© O(1)
+// KeeperMap — résolution Handle → entité O(1)
 public class KeeperMap
 {
     // Interne: Dictionary<Handle, IHandleable> _objects
@@ -1057,11 +1057,11 @@ public class KeeperMap
     public void RelinkManyAfterDeserialize<T>(IEnumerable<T> handleableObjects) where T : IHandleable;
 }
 
-// Keeper â€” registre central
+// Keeper — registre central
 public class Keeper : IDisposable
 {
     public HandleManager handleManager;
-    public KeeperMap map;                           // â† ACCÃˆS AUX ENTITÃ‰S
+    public KeeperMap map;                           // ← ACCÈS AUX ENTITÉS
     public World ecsWorld { get; }                  // Unity ECS World
     public EntityManager entityManager { get; }     // Unity ECS EntityManager
 
@@ -1070,21 +1070,21 @@ public class Keeper : IDisposable
     public void PostInject();
     public Handle Register(IHandleable handleable);
     public void Unregister(IHandleable handleable);
-    public ABCBuilding _HandleToBuildingSafe(Handle handle);   // null si non-bÃ¢timent
+    public ABCBuilding _HandleToBuildingSafe(Handle handle);   // null si non-bâtiment
     public void OnPreSerialize();
     public void Dispose();
 }
 ```
 
-### Drone â€” Drone Autonome
+### Drone — Drone Autonome
 
 ```csharp
 public class Drone : IHandleable, ICargoHolder, ICargoHolderOps
 {
-    // â”€â”€ Enum StateID â”€â”€
+    // ── Enum StateID ──
     // Moving, Crawling, Working, Resting, Idle, WayWorking
 
-    // â”€â”€ Ã‰vÃ©nements statiques â”€â”€
+    // ── Événements statiques ──
     public static readonly GameEventType GevDroneInternalAdd;
     public static readonly GameEventType GevDroneInternalRemove;
     public static readonly GameEventType GevDroneSpawned;
@@ -1092,7 +1092,7 @@ public class Drone : IHandleable, ICargoHolder, ICargoHolderOps
     public static readonly GameEventType GevDroneStartWorking;
     public static readonly GameEventType GevDroneStopWorking;
 
-    // â”€â”€ Champs publics â”€â”€
+    // ── Champs publics ──
     public bool enabled;
     public RailedCarrier railEngaged;
     public float timestampCreation;
@@ -1100,24 +1100,24 @@ public class Drone : IHandleable, ICargoHolder, ICargoHolderOps
     public int occupedShipDockIndex;
     public Vector3 lastWayPosition;
 
-    // â”€â”€ PropriÃ©tÃ©s â”€â”€
-    public int number { get; }                       // identifiant numÃ©rique
+    // ── Propriétés ──
+    public int number { get; }                       // identifiant numérique
     public Vector3 position3D { get; }               // position 3D dans Unity
     public Quaternion directionRotation { get; }
-    public CargoQuantity cargoCapacity { get; }      // capacitÃ© de cargo
-    public StateID stateId { get; }                  // Ã©tat courant
+    public CargoQuantity cargoCapacity { get; }      // capacité de cargo
+    public StateID stateId { get; }                  // état courant
     public Handle handle { get; }                    // IHandleable
     public bool alive { get; }
     public float health { get; }
     public Universe universe { get; }
     public Planet planet { get; }
-    public Faction faction { get; }                  // faction propriÃ©taire
-    public Building homeDocking { get; }             // bÃ¢timent d'attache
-    public Building currentDocking { get; }          // bÃ¢timent actuel
+    public Faction faction { get; }                  // faction propriétaire
+    public Building homeDocking { get; }             // bâtiment d'attache
+    public Building currentDocking { get; }          // bâtiment actuel
     public bool isDocked { get; }                    // est en dock ?
-    public Task task { get; }                        // tÃ¢che en cours
+    public Task task { get; }                        // tâche en cours
 
-    // â”€â”€ MÃ©thodes â”€â”€
+    // ── Méthodes ──
     public void Move(Building to, bool rush = false);
     public void ReplenishHealth();
     public void SetCollectTask(Task collectTask);
@@ -1129,13 +1129,13 @@ public class Drone : IHandleable, ICargoHolder, ICargoHolderOps
 }
 ```
 
-### GameEventBus â€” Bus d'Ã‰vÃ©nements
+### GameEventBus — Bus d'Événements
 
 ```csharp
 [DontSave]
 public class GameEventBus : IDisposable
 {
-    public const int MAX_EVENT_UID = 256;            // nombre max de types d'Ã©vÃ©nements
+    public const int MAX_EVENT_UID = 256;            // nombre max de types d'événements
 
     public delegate void EventHandlerDelegate(
         IHandleable handleable,
@@ -1147,28 +1147,28 @@ public class GameEventBus : IDisposable
 
     public GameEventBus(Keeper keeper);
 
-    // Dispatch diffÃ©rÃ© (asynchrone dans le tick)
+    // Dispatch différé (asynchrone dans le tick)
     public void DispatchDeferred(GameEventType type, IHandleable senderObject);
 
-    // Dispatch immÃ©diat (synchrone)
+    // Dispatch immédiat (synchrone)
     // void DispatchImmediate(GameEventType type, IHandleable senderObject);
 
     public void Dispose();
 
-    // âš ï¸ AccÃ¨s via Universe: universe.gameEventBus
-    // Les handlers sont typiquement abonnÃ©s avec delegate ref-param
+    // ⚠️ Accès via Universe: universe.gameEventBus
+    // Les handlers sont typiquement abonnés avec delegate ref-param
 }
 ```
 
-### Colony â€” BÃ¢timent Colonie (extends Building)
+### Colony — Bâtiment Colonie (extends Building)
 
 ```csharp
 public class Colony : Building   // extends Building extends ABCBuilding
 {
-    // â”€â”€ Champs publics â”€â”€
+    // ── Champs publics ──
     public Zeppelin zeppelin;                       // zeppelin de livraison
 
-    // â”€â”€ PropriÃ©tÃ©s â”€â”€
+    // ── Propriétés ──
     public bool conversionInProgress { get; }
     public float conversionProgress { get; }        // 0-1
     public ProductivityBuffer productivity { get; }
@@ -1177,7 +1177,7 @@ public class Colony : Building   // extends Building extends ABCBuilding
     public bool inputResourcesGathered { get; }
     public float WaterSupplyEfficiency { get; }
 
-    // â”€â”€ MÃ©thodes â”€â”€
+    // ── Méthodes ──
     public Colony(Faction faction, Vector2 position, BuildingType type,
         int number, string name, Quaternion rotation);
     public override string GetName();
@@ -1200,50 +1200,51 @@ public class Colony : Building   // extends Building extends ABCBuilding
 }
 ```
 
-### âš ï¸ Atmosphere.cs â€” VISUEL UNIQUEMENT (Pas de donnÃ©es climatiques)
+### ⚠️ Atmosphere.cs — VISUEL UNIQUEMENT (Pas de données climatiques)
 
-> **IMPORTANT** : `Atmosphere.cs` est un `MonoBehaviour` VISUEL qui gÃ¨re le rendu 3D de l'atmosphÃ¨re (shaders, couleurs). Les donnÃ©es climatiques rÃ©elles (pression, tempÃ©rature) sont des **champs privÃ©s dans `Planet.cs`**.
+> **IMPORTANT** : `Atmosphere.cs` est un `MonoBehaviour` VISUEL qui gère le rendu 3D de l'atmosphère (shaders, couleurs). Les données climatiques réelles (pression, température) sont des **champs privés dans `Planet.cs`**.
 
 ```csharp
 public class Atmosphere : MonoBehaviour  // VISUEL UNIQUEMENT
 {
-    // PropriÃ©tÃ©s shader/rendu:
+    // Propriétés shader/rendu:
     public Color Color { get; set; }
     public float InnerDensity { get; set; }
     public float OuterRadius { get; set; }
     public Color SkyColor1 { get; set; }
     public Color SkyColor2 { get; set; }
     public float HazeDensity { get; set; }
-    // ... (tout visuel, pas de donnÃ©es de jeu)
+    // ... (tout visuel, pas de données de jeu)
 }
-// âœ… Pour les donnÃ©es atmosphÃ©riques, utiliser Planet.accCO2Temperature, Planet.stats, etc.
-// âœ… Ou via SDK: TemperatureCalculator, AtmosphereSimulator
+// ✅ Pour les données atmosphériques, utiliser Planet.accCO2Temperature, Planet.stats, etc.
+// ✅ Ou via SDK: TemperatureCalculator, AtmosphereSimulator
 ```
 
 ---
 
-## ï¿½ðŸ“ Fichiers Sources de RÃ©fÃ©rence
+## �📁 Fichiers Sources de Référence
 
-### ðŸ”¬ Sources dÃ©compilÃ©es du jeu (VÃ‰RITÃ‰ ABSOLUE)
+### 🔬 Sources décompilées du jeu (VÉRITÉ ABSOLUE)
 
-> Ces fichiers sont le code rÃ©el du jeu extrait par IL2CPP dump. Toujours prioritaire sur toute autre doc.
+> Ces fichiers sont le code réel du jeu extrait par IL2CPP dump. Toujours prioritaire sur toute autre doc.
 
-| Classe | Chemin source |
-|--------|---------------|
-| `BaseGame.cs` | `Tools\lispyExtract\BaseGame.cs` |
-| `Universe.cs` | `Tools\lispyExtract\Universe.cs` |
-| `Planet.cs` | `Tools\lispyExtract\Planet.cs` |
-| `Faction.cs` | `Tools\lispyExtract\Faction.cs` |
-| `Keeper.cs` | `Tools\lispyExtract\Keeper.cs` |
-| `KeeperMap.cs` | `Tools\lispyExtract\KeeperMap.cs` |
-| `Handle.cs` | `Tools\lispyExtract\Handle.cs` |
-| `IHandleable.cs` | `Tools\lispyExtract\IHandleable.cs` |
-| `Building.cs` | `Tools\lispyExtract\Building.cs` |
-| `ABCBuilding.cs` | `Tools\lispyExtract\ABCBuilding.cs` |
-| `Atmosphere.cs` | `Tools\lispyExtract\Atmosphere.cs` |
-| Toutes les classes | `Tools\lispyExtract\` |
+| Classe | Chemin source (InteropDump = priorité 1) |
+|--------|------------------------------------------|
+| `BaseGame.cs` | `Tools\InteropDump\ScriptsAssembly\BaseGame.cs` |
+| `Universe.cs` | `Tools\InteropDump\ScriptsAssembly\Universe.cs` |
+| `Planet.cs` | `Tools\InteropDump\ScriptsAssembly\Planet.cs` |
+| `Faction.cs` | `Tools\InteropDump\ScriptsAssembly\Faction.cs` |
+| `Keeper.cs` | `Tools\InteropDump\ScriptsAssembly\Keeper.cs` |
+| `KeeperMap.cs` | `Tools\InteropDump\ScriptsAssembly\KeeperMap.cs` |
+| `Handle.cs` | `Tools\InteropDump\ScriptsAssembly\Handle.cs` |
+| `IHandleable.cs` | `Tools\InteropDump\ScriptsAssembly\IHandleable.cs` |
+| `Building.cs` | `Tools\InteropDump\ScriptsAssembly\Building.cs` |
+| `ABCBuilding.cs` | `Tools\InteropDump\ScriptsAssembly\ABCBuilding.cs` |
+| `Atmosphere.cs` | `Tools\InteropDump\ScriptsAssembly\Atmosphere.cs` |
+| Index namespace complet | `.\Tools\Extract-Signatures.ps1` → `InteropDump\_bundles\all.sig.md` (~428k tokens) |
+| Fallback par nom de classe | `Tools\lispyExtract\<ClassName>.cs` |
 
-### ðŸ“š Documentation de rÃ©fÃ©rence
+### 📚 Documentation de référence
 
 | Document | Chemin |
 |---------|--------|
@@ -1251,6 +1252,6 @@ public class Atmosphere : MonoBehaviour  // VISUEL UNIQUEMENT
 | Architecture BaseGame/Keeper | `Internal_doc\ARCHITECTURE\BaseGame-Architecture-Corrections.md` |
 | Handle System complet | `Internal_doc\ARCHITECTURE\Handle-System-Architecture.md` |
 | Planet getters complets | `Internal_doc\PlanetGetters-Reference.md` |
-| Patterns validÃ©s | `Internal_doc\ARCHITECTURE\VALIDATED-PATTERNS.md` |
+| Patterns validés | `Internal_doc\ARCHITECTURE\VALIDATED-PATTERNS.md` |
 | Scene Architecture | `Internal_doc\ARCHITECTURE\Scene-Management-Architecture.md` |
 | Interaction System | `Internal_doc\ARCHITECTURE\Interraction-System-Analysis.md` |

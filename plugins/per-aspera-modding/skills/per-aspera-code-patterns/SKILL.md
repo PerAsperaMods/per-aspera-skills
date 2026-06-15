@@ -9,13 +9,13 @@ license: MIT
 ---
 
 
-# Per Aspera â€” Validated IL2CPP Code Patterns
+# Per Aspera — Validated IL2CPP Code Patterns
 
 All patterns below have been verified working in production Per Aspera mods.
 
 ---
 
-## âœ… UnityEngine.Input (Keyboard)
+## ✅ UnityEngine.Input (Keyboard)
 
 ```csharp
 // Evidence: CommandsDemo.cs L97-106
@@ -29,11 +29,11 @@ private void Update()
     }
 }
 ```
-> âœ… Works in IL2CPP. Direct Unity Input, no wrappers needed.
+> ✅ Works in IL2CPP. Direct Unity Input, no wrappers needed.
 
 ---
 
-## âœ… MonoBehaviour + [RegisterInIl2Cpp]
+## ✅ MonoBehaviour + [RegisterInIl2Cpp]
 
 ```csharp
 using UnityEngine;
@@ -49,11 +49,11 @@ public class MyGameComponent : MonoBehaviour
     private void OnDestroy() { /* lifecycle works */ }
 }
 ```
-> âœ… Full Unity lifecycle support. Required pattern for all interactive components.
+> ✅ Full Unity lifecycle support. Required pattern for all interactive components.
 
 ---
 
-## âœ… BepInX Plugin (BasePlugin)
+## ✅ BepInX Plugin (BasePlugin)
 
 ```csharp
 using BepInEx;
@@ -69,30 +69,30 @@ public class MyPlugin : BasePlugin
     }
 }
 ```
-> âœ… Required pattern. **Always use `BasePlugin`** â€” never `BaseUnityPlugin` in IL2CPP.
+> ✅ Required pattern. **Always use `BasePlugin`** — never `BaseUnityPlugin` in IL2CPP.
 
 ---
 
-## âœ… System.Type Safety Rule
+## ✅ System.Type Safety Rule
 
-> **RÃ©solu au build (2026-06)** : alias global `Type = System.Type` dans
+> **Résolu au build (2026-06)** : alias global `Type = System.Type` dans
 > `Directory.Build.props` (racine + SDK). `Type` nu compile et signifie `System.Type`
-> partout dans ce workspace â€” plus besoin de qualifier manuellement.
+> partout dans ce workspace — plus besoin de qualifier manuellement.
 
 ```csharp
-// âœ… Both correct in this workspace
-private static Type? _buildingType;          // alias â†’ System.Type
-private static System.Type? _cargoType;     // explicite â€” OK aussi
+// ✅ Both correct in this workspace
+private static Type? _buildingType;          // alias → System.Type
+private static System.Type? _cargoType;     // explicite — OK aussi
 
 // Hors workspace (projet sans l'alias) : qualifier System.Type ou copier l'alias :
 // <Using Include="System.Type" Alias="Type" />
 ```
-> âš ï¸ RÃ©flexion (`GetMethod`/`GetField`â€¦) hors `PerAspera.Core.IL2CppExtensions` :
-> warning **RS0030** (BannedApiAnalyzers). PrÃ©fÃ©rer les proxies interop typÃ©s.
+> ⚠️ Réflexion (`GetMethod`/`GetField`…) hors `PerAspera.Core.IL2CppExtensions` :
+> warning **RS0030** (BannedApiAnalyzers). Préférer les proxies interop typés.
 
 ---
 
-## âœ… IL2CPP Extension Methods
+## ✅ IL2CPP Extension Methods
 
 ```csharp
 using PerAspera.Core.IL2CPP;
@@ -114,7 +114,7 @@ var state = instance.SafeInvoke("GetCurrentState");
 
 ---
 
-## âœ… SceneManager Integration
+## ✅ SceneManager Integration
 
 ```csharp
 using PerAspera.GameAPI.Wrappers;
@@ -134,18 +134,18 @@ SceneManager.SceneLoaded += (scene, mode) =>
 
 ---
 
-## âŒ Common LLM Hallucinations (These Are FALSE)
+## ❌ Common LLM Hallucinations (These Are FALSE)
 
 | Claim | Reality |
 |-------|---------|
-| "UnityEngine.Input not available in IL2CPP" | âœ… Works perfectly |
-| "Need Il2Cpp wrappers for Unity classes" | âœ… Direct Unity classes work |
-| "KeyCode enum not supported" | âœ… Standard Unity enums work normally |
-| "MonoBehaviour requires special setup" | âœ… Just add `[RegisterInIl2Cpp]` and `IntPtr` ctor |
-| "`Type` is fine in IL2CPP" | âœ… Dans ce workspace oui (alias global `Type=System.Type`) ; ailleurs, qualifier `System.Type` |
-| "Use `??` between FieldInfo and PropertyInfo" | âŒ CS0019 â€” use separate `if` blocks |
-| "`BaseGame.Instance` accesses the singleton" | âŒ N'existe PAS â€” utiliser `BaseGame.self` (champ static) ou `BaseGame.Get()` |
-| "Atmosphere.cs contient les donnÃ©es climatiques" | âŒ VISUEL ONLY (shader) â€” les donnÃ©es sont dans `Planet.cs` fields |
+| "UnityEngine.Input not available in IL2CPP" | ✅ Works perfectly |
+| "Need Il2Cpp wrappers for Unity classes" | ✅ Direct Unity classes work |
+| "KeyCode enum not supported" | ✅ Standard Unity enums work normally |
+| "MonoBehaviour requires special setup" | ✅ Just add `[RegisterInIl2Cpp]` and `IntPtr` ctor |
+| "`Type` is fine in IL2CPP" | ✅ Dans ce workspace oui (alias global `Type=System.Type`) ; ailleurs, qualifier `System.Type` |
+| "Use `??` between FieldInfo and PropertyInfo" | ❌ CS0019 — use separate `if` blocks |
+| "`BaseGame.Instance` accesses the singleton" | ❌ N'existe PAS — utiliser `BaseGame.self` (champ static) ou `BaseGame.Get()` |
+| "Atmosphere.cs contient les données climatiques" | ❌ VISUEL ONLY (shader) — les données sont dans `Planet.cs` fields |
 
 ---
 
@@ -164,152 +164,11 @@ public class MirrorPlanet : Mirror<object>
 // Singleton Mirror
 public class MirrorBaseGame : SingletonMirror<MirrorBaseGame, object>
 {
-    // âœ… BaseGame uses static field 'self' â€” NOT BaseGame.Instance (n'existe pas dans le source IL2CPP)
+    // ✅ BaseGame uses static field 'self' — NOT BaseGame.Instance (n'existe pas dans le source IL2CPP)
     protected override object GetInstanceInternal() => BaseGame.self;
     public float GetDay() => Invoke<float>("GetCurrentDay") ?? 0f;
 }
 
 // Access
 var temp = MirrorUniverse.GetPlanet()?.GetTemperature();
-```
-
-
----
-
-## ✅ MonoBehaviour IMGUI — Pattern complet (validé ResourceBarScroll 2026-06-13)
-
-### Enregistrement IL2CPP (OBLIGATOIRE avant AddComponent)
-
-```csharp
-// Dans Plugin.Load() — AVANT tout AddComponent
-ClassInjector.RegisterTypeInIl2Cpp<MonBehaviour>();  // ✅ PAS [RegisterInIl2Cpp] seul
-
-// Puis attacher sur un GO persistant
-var go = new GameObject("MonOverlay");
-UnityEngine.Object.DontDestroyOnLoad(go);
-go.AddComponent<MonBehaviour>();
-
-// Constructeur IL2CPP obligatoire dans la classe
-public class MonBehaviour : MonoBehaviour
-{
-    public MonBehaviour(IntPtr ptr) : base(ptr) { }
-    void Update() { /* lifecycle OK */ }
-    void OnGUI()  { /* IMGUI OK */ }
-}
-```
-
-> ⚠️ `[RegisterInIl2Cpp]` (attribut) seul NE SUFFIT PAS. Toujours appeler
-> `ClassInjector.RegisterTypeInIl2Cpp<T>()` dans `Load()`.
-
----
-
-## ❌ GUI.Window delegate en IL2CPP
-
-```csharp
-// ❌ ÉCHOUE silencieusement en IL2CPP — affiche des ① bizarres
-_panelRect = GUI.Window(id, _panelRect, (GUI.WindowFunction)DrawPanel, "Titre");
-
-// ✅ Alternative validée — GUI.Box + GUILayout.BeginArea + drag manuel
-GUI.Box(panelRect, "Titre");
-GUILayout.BeginArea(new Rect(panelRect.x + 4, panelRect.y + 20, panelRect.width - 8, panelRect.height - 24));
-DrawContent();
-GUILayout.EndArea();
-
-// Drag manuel via Event.current
-void HandleDrag(Rect header)
-{
-    var e = Event.current;
-    if (e == null) return;
-    var mp = new Vector2(e.mousePosition.x, e.mousePosition.y);
-    if (e.type == EventType.MouseDown && header.Contains(mp))
-    {
-        _dragging = true;
-        _dragOffset = mp - new Vector2(_panelRect.x, _panelRect.y);
-        e.Use();
-    }
-    if (e.type == EventType.MouseUp) _dragging = false;
-    if (_dragging && e.type == EventType.MouseDrag)
-    {
-        _panelRect.x = mp.x - _dragOffset.x;
-        _panelRect.y = mp.y - _dragOffset.y;
-        e.Use();
-    }
-}
-```
-
----
-
-## ✅ Charger une Texture2D depuis fichier extrait
-
-```csharp
-// Chemin assets extraits : Decompiled\PerAsperaData\Texture2D\
-var bytes = File.ReadAllBytes(@"<path>\IMG_ArrowLeft.png");
-var tex = new Texture2D(2, 2, TextureFormat.RGBA32, false);
-ImageConversion.LoadImage(tex, bytes);  // ✅ PAS tex.LoadImage() directement
-
-// Flip horizontal (pour obtenir ArrowRight depuis ArrowLeft)
-static Texture2D FlipHorizontal(Texture2D src)
-{
-    int w = src.width, h = src.height;
-    var dst = new Texture2D(w, h, src.format, false);
-    var srcPx = src.GetPixels32();
-    var dstPx = new Color32[srcPx.Length];
-    for (int y = 0; y < h; y++)
-        for (int x = 0; x < w; x++)
-            dstPx[y * w + (w - 1 - x)] = srcPx[y * w + x];
-    dst.SetPixels32(dstPx);
-    dst.Apply();
-    return dst;
-}
-
-// Utilisation en OnGUI
-GUI.DrawTexture(rect, tex, ScaleMode.ScaleToFit, alphaBlend: true);
-```
-
----
-
-## ⚠️ SetActive(false) + FindObjectsOfType — Piège IL2CPP
-
-```csharp
-// ❌ PIÈGE : si on désactive le GO parent, les enfants ne sont plus trouvables
-go.SetActive(false);
-var items = GameObject.FindObjectsOfType<ResourceItem>(); // retourne 0 items !
-
-// ✅ Cacher les items AVANT de désactiver le parent
-var items = GameObject.FindObjectsOfType<ResourceItem>(); // capture pendant qu'ils sont actifs
-CachedItems.AddRange(items);
-go.SetActive(false); // maintenant on peut désactiver
-
-// OU : inclure les inactifs (Unity 2022+)
-var items = GameObject.FindObjectsOfType<ResourceItem>(includeInactive: true);
-```
-
----
-
-## ✅ ResourceItem — API HUD natif (validé 2026-06-13)
-
-Classe du jeu gérant chaque ressource dans la barre HUD.
-
-```csharp
-// Hiérarchie Unity (confirmée en jeu) :
-// PNL_Resources (ResourcesPanel, couvre tout l'écran — NE PAS masquer)
-//   └── ResourcesParent (HorizontalLayoutGroup + ContentSizeFitter)
-//         └── ResourcesMined (HorizontalLayoutGroup) = containerPanelMined
-
-// Champs accessibles via interop typé :
-bool  isActive   = item.active;           // état natif (pas Unity activeInHierarchy)
-bool  isHidden   = item.forcedHide;
-bool  hasWarning = item.warningActive;    // carence ou alerte stock
-float qty        = item.lastQuantity;     // dernière quantité connue
-float distQty    = item.lastDistrictQuantity;
-string name      = item.resourceType?.name ?? "?"; // ID YAML interne
-
-// Méthodes de contrôle visibility (utilisées pour pagination) :
-item.ForceShow();    // force visible même si le jeu voudrait le cacher
-item.ForcedHide();   // cache même si actif
-item.ClearForced();  // remet le comportement natif
-
-// Patch pagination (exemple ResourceBarScroll) :
-// Postfix sur ResourcesPanel.RefreshItems → appeler ApplyPage() pour ré-appliquer
-// après chaque refresh natif du panel.
 ```

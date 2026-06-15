@@ -8,15 +8,15 @@ description: >
 license: MIT
 ---
 
-# SDK Core â€” Foundations Reference
+# SDK Core — Foundations Reference
 
 ## Assembly Covered
 
-- `PerAspera.Core` (2026-06) â€” absorbe Core + IL2CppExtensions. Namespaces : `PerAspera.Core.*` et `PerAspera.Core.IL2CPP`
+- `PerAspera.Core` (2026-06) — absorbe Core + IL2CppExtensions. Namespaces : `PerAspera.Core.*` et `PerAspera.Core.IL2CPP`
 
-> **NativeWrapper\<T\>** (namespace `PerAspera.Core.IL2CPP`) est la classe de base gÃ©nÃ©rique pour
+> **NativeWrapper\<T\>** (namespace `PerAspera.Core.IL2CPP`) est la classe de base générique pour
 > tous les wrappers. Elle fournit `CallNative`, `GetNativeField`, `DebugNativeStructure`, etc.
-> Les wrappers hÃ©ritent via `WrapperBase` qui est dans `PerAspera.GameAPI.Wrappers`.
+> Les wrappers héritent via `WrapperBase` qui est dans `PerAspera.GameAPI.Wrappers`.
 > Source : [NativeWrapper.cs](SDK/PerAspera.Core/IL2CppExtensions/NativeWrapper.cs)
 
 ---
@@ -50,13 +50,13 @@ LogAspera.Debug("Frame delta: {0}ms", deltaMs);
 
 ## ReflectionHelpers
 
-Safe reflection in IL2CPP context â€” avoids direct field access on native types.
+Safe reflection in IL2CPP context — avoids direct field access on native types.
 
-> âš ï¸ **Doctrine 2026-06 : interop typÃ© d'abord.** Avant tout helper de rÃ©flexion,
-> vÃ©rifier si le membre est accessible via le proxy interop typÃ© (`Planet`, `Building`â€¦)
-> â€” dans ce cas l'appel typÃ© est obligatoire. La rÃ©flexion est rÃ©servÃ©e aux membres
-> inaccessibles, et la rÃ©flexion **directe** (`GetMethod`/`GetField`/`Invoke`) hors de
-> `PerAspera.Core.IL2CppExtensions` dÃ©clenche le warning **RS0030** (BannedApiAnalyzers).
+> ⚠️ **Doctrine 2026-06 : interop typé d'abord.** Avant tout helper de réflexion,
+> vérifier si le membre est accessible via le proxy interop typé (`Planet`, `Building`…)
+> — dans ce cas l'appel typé est obligatoire. La réflexion est réservée aux membres
+> inaccessibles, et la réflexion **directe** (`GetMethod`/`GetField`/`Invoke`) hors de
+> `PerAspera.Core.IL2CppExtensions` déclenche le warning **RS0030** (BannedApiAnalyzers).
 > Audit : `docs\SDK-CRITICAL-REVIEW.md`.
 
 ```csharp
@@ -85,22 +85,22 @@ public static T GetSafeField<T>(object instance, string fieldName, T fallback = 
 
 ---
 
-## IL2CPP â†” C# Type Conversions
+## IL2CPP ↔ C# Type Conversions
 
 ### Strings
 
 ```csharp
-// IL2CPP native string â†’ C# string
+// IL2CPP native string → C# string
 string csharpString = nativeString.ToCSharp();
 
-// C# string â†’ IL2CPP string
+// C# string → IL2CPP string
 Il2CppSystem.String nativeStr = csharpString.ToIl2Cpp();
 ```
 
 ### Collections
 
 ```csharp
-// IL2CPP array â†’ C# array/list
+// IL2CPP array → C# array/list
 var csharpList = nativeArray.ToCSharpArray().ToList();
 
 // Filter an IL2CPP collection
@@ -113,11 +113,11 @@ var operational = buildings
 var il2cppList = csharpList.ToIl2CppList();
 ```
 
-> **Gotcha**: Never iterate directly over an `Il2CppSystem.Collections.Generic.List` â€” always call `.ToCSharpArray()` first.
+> **Gotcha**: Never iterate directly over an `Il2CppSystem.Collections.Generic.List` — always call `.ToCSharpArray()` first.
 
 ---
 
-## PerAspera.Abstractions â€” Key Interfaces
+## PerAspera.Abstractions — Key Interfaces
 
 ```csharp
 // Base interface for mods using SDK

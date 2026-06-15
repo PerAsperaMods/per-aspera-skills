@@ -10,7 +10,7 @@ license: MIT
 ---
 
 
-# Per Aspera SDK â€” GameAPI & GetterOverride Reference
+# Per Aspera SDK — GameAPI & GetterOverride Reference
 
 ## GameAPI Entry Point
 
@@ -26,7 +26,7 @@ public override void Load()
     var universe = GameAPI.Universe;
     var baseGame = GameAPI.BaseGame;
 
-    Log.LogInfo($"Planet temp: {planet?.GetTemperature():F2}Â°C");
+    Log.LogInfo($"Planet temp: {planet?.GetTemperature():F2}°C");
     Log.LogInfo(GameAPI.Overrides.GetStatistics());
 }
 ```
@@ -59,7 +59,7 @@ public static class GameAPI
 
 ---
 
-## GetterOverride â€” Runtime Value Override
+## GetterOverride — Runtime Value Override
 
 ### Class definition
 
@@ -143,15 +143,15 @@ public static class GetterOverrideRegistry
 The system automatically generates Harmony Prefix patches for registered overrides. When `IsEnabled = true`, the patch intercepts the target getter and returns `CurrentValue`.
 
 ```
-PlanetPatches  â€” planet temperature, pressure, water level
-EnergyPatches  â€” solar/wind/thermal production per building
+PlanetPatches  — planet temperature, pressure, water level
+EnergyPatches  — solar/wind/thermal production per building
 ```
 
-You **do not** write Harmony patches manually for overrides â€” the SDK handles it.
+You **do not** write Harmony patches manually for overrides — the SDK handles it.
 
 ---
 
-## Full Example â€” Solar Boost + Temperature Override
+## Full Example — Solar Boost + Temperature Override
 
 ```csharp
 [BepInPlugin("com.mymod.overrides", "Override Demo", "1.0.0")]
@@ -166,9 +166,9 @@ public class OverrideDemoPlugin : BasePlugin
         solar?.SetEnabled(true);
         solar?.SetValue(2.0f);
 
-        // +15Â°C temperature offset
+        // +15°C temperature offset
         var tempOverride = new GetterOverride(
-            "Planet", "GetTemperature", "+15Â°C Bonus",
+            "Planet", "GetTemperature", "+15°C Bonus",
             defaultValue: 0f, minValue: -50f, maxValue: 50f, category: "Climate"
         );
         GameAPI.Overrides.Register(tempOverride);
