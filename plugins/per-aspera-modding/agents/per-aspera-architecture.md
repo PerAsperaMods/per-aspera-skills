@@ -24,8 +24,8 @@ Cet agent se concentre uniquement sur l'architecture et la conception.
 - **Harmony Patching** : `Organization-Wiki\advanced\Harmony-Patching.md`
 - **BepInEx Advanced** : `Internal_doc\bepinex6-docs\articles\advanced\`
 - **Sources décompilées (source de vérité)** : `Tools\InteropDump\ScriptsAssembly\` (proxies typés, ilspycmd 2026-06-10)
-  - Lookup rapide un fichier : `InteropDump\ScriptsAssembly\<ClassName>.cs`
-  - Vue d'ensemble d'un namespace (−93 % tokens) : `.\Tools\Extract-Signatures.ps1 -Pattern <Namespace>` → `InteropDump\_bundles\<Namespace>.sig.md`
+  - Lookup rapide un fichier : `Tools\InteropDump\ScriptsAssembly\<ClassName>.cs`
+  - Vue d'ensemble d'un namespace (−93 % tokens) : `.\Tools\Extract-Signatures.ps1 -Pattern <Namespace>` → `Tools\InteropDump\_bundles\<Namespace>.sig.md`
   - Bundle complet à envoyer à Qwen : `.\Tools\Pack-NamespaceBundle.ps1 -Pattern <Namespace>`
 - **Sources décompilées (par classe, fallback)** : `Tools\lispyExtract\`
 - **Sources décompilées (par namespace, fallback)** : `Decompiled\PerAsperaData\ScriptsAssembly\`

@@ -28,8 +28,8 @@ Je me spécialise dans la lecture des logs BepInEx et le diagnostic d'erreurs IL
 - `Internal_doc\ARCHITECTURE\VALIDATED-PATTERNS.md`
 - `docs\Capabilities-Matrix.md`
 - `Tools\InteropDump\ScriptsAssembly\` — **source de vérité** (proxies IL2CPP typés, ilspycmd 2026-06-10)
-  - Fichier précis : `InteropDump\ScriptsAssembly\<ClassName>.cs`
-  - Explorer tout un namespace en ~10k tokens : `.\Tools\Extract-Signatures.ps1 -Pattern <Namespace>` → `InteropDump\_bundles\<Namespace>.sig.md`
+  - Fichier précis : `Tools\InteropDump\ScriptsAssembly\<ClassName>.cs`
+  - Explorer tout un namespace en ~10k tokens : `.\Tools\Extract-Signatures.ps1 -Pattern <Namespace>` → `Tools\InteropDump\_bundles\<Namespace>.sig.md`
 - `Tools\lispyExtract\` — fallback — dump plat par nom de classe
 - `Decompiled\PerAsperaData\ScriptsAssembly\` — fallback namespace — supersédé par InteropDump pour les lookups C#
 
