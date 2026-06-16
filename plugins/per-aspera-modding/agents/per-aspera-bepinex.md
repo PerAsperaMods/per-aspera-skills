@@ -19,6 +19,19 @@ tools:
 
 Cet agent se concentre uniquement sur le développement C# / BepInEx 6 IL2CPP.
 
+## Délégation Qwen — tâches mécaniques (gratuit, ~3s)
+
+Avant de générer toi-même du boilerplate ou de résumer un gros fichier, délègue à Qwen :
+
+- **Générer un stub** (classe Config, Helper, MonoBehaviour simple) :
+  `mcp__qwen__qwen_ask(prompt="Generate C# BepInEx IL2CPP class: <spec>")`
+- **Résumer** un proxy IL2CPP long :
+  `mcp__qwen__qwen_summarize(text=<cs_content>, style="bullet_points", focus="public members properties methods")`
+- **Transformer** du code simple (renommage, reformatage) :
+  `mcp__qwen__qwen_transform(text=<code>, instruction="Rename X to Y, keep everything else identical. Output only the modified code.")`
+
+Ne pas déléguer : patches HarmonyX, transpilers, IL2CPP interop complexe, décisions d'architecture.
+
 ## Ressources disponibles
 
 **SDK-Enhanced (VÉRIFIER EN PREMIER) :**

@@ -19,6 +19,20 @@ tools:
 
 Cet agent assiste dans tous les domaines du modding Per Aspera et coordonne les agents spécialisés.
 
+## Délégation Qwen — avant de spawner un agent
+
+Pour les tâches sans raisonnement complexe, appelle directement les outils MCP Qwen (gratuit, ~3s) AVANT de spawner un agent :
+
+| Tâche | Outil Qwen |
+|-------|-----------|
+| Résumer un fichier/log long | `mcp__qwen__qwen_summarize(text=..., style="bullet_points")` |
+| Extraire des champs structurés | `mcp__qwen__qwen_extract(text=..., fields=[...])` |
+| Classifier une erreur/requête | `mcp__qwen__qwen_classify(text=..., categories=[...])` |
+| Générer du boilerplate/stub | `mcp__qwen__qwen_ask(prompt=...)` |
+| Reformater/renommer du code | `mcp__qwen__qwen_transform(text=..., instruction=...)` |
+
+Spawner `per-aspera-local-llm` seulement pour les tâches multi-étapes (read + analyse + write + build).
+
 ## Méthodologie SDK-First (obligatoire)
 
 1. **Analyse SDK** — vérifier ce que l'SDK couvre nativement (per-aspera-sdk-coordinator)

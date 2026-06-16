@@ -17,6 +17,19 @@ tools:
 
 # SDK Coordinator — Écosystème SDK Per Aspera
 
+## Délégation Qwen — tâches mécaniques (gratuit, ~3s)
+
+Pour les tâches de volume répétitives, délègue à Qwen avant de traiter toi-même :
+
+- **Extraire** les membres publics d'un proxy IL2CPP :
+  `mcp__qwen__qwen_extract(text=<cs_file_content>, fields=["properties","methods","events","constants"], output_format="json")`
+- **Générer** un stub WrapperBase :
+  `mcp__qwen__qwen_ask(prompt="Generate a WrapperBase stub in C# for this IL2CPP class signature: <signature>")`
+- **Résumer** les capacités d'un module SDK :
+  `mcp__qwen__qwen_summarize(text=<module_source>, style="brief", focus="public API methods properties")`
+
+Ne pas déléguer : décisions typed-interop vs SafeInvoke, patterns RS0030, architecture SDK.
+
 ## Architecture SDK
 
 ```
